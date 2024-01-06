@@ -978,9 +978,16 @@ dui add dbutton "settings_1 settings_3 settings_4" 642 0 1277 188 \
                 ::plugins::A_Flow_Espresso_Profile::demo_graph
                 if {$::settings(skin) == "DSx"} {
                     set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
-                }
+                } 
                 dui page load Aflowset
-                } else {
+            } elseif {$title_test == "D-Flow /" } {
+                ::plugins::D_Flow_Espresso_Profile::prep
+                ::plugins::D_Flow_Espresso_Profile::demo_graph
+                if {$::settings(skin) == "DSx"} {
+                    set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
+                }
+                dui page load Dflowset
+            } else {
                 after 500 update_de1_explanation_chart
                 say [translate {settings}] $::settings(sound_button_in)
                 set_next_page off $::settings(settings_profile_type)
@@ -1024,10 +1031,13 @@ add_de1_button $page_set {save_settings_to_de1; set_alarms_for_de1_wake_sleep; s
         set_next_page off message; page_show message
         after 200 app_exit
     } else {
-
         if {[ifexists ::settings(settings_profile_type)] == "Aflowset"} {
             # if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
             set ::settings(settings_profile_type) "Aflowset"
+        }
+        if {[ifexists ::settings(settings_profile_type)] == "Dflowset"} {
+            # if they were on the LIMITS tab of the Advanced profiles, reset the ui back to the main tab
+            set ::settings(settings_profile_type) "Dflowset"
         }
 
         #set_next_page off off; page_show off
@@ -1044,14 +1054,23 @@ add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -noc
 
 ########## settings_1 page
 dui add dbutton settings_1 1100 526 \
-    -bwidth 200 -bheight 200 -tags new_profile_button -initial_state hidden \
+    -bwidth 200 -bheight 200 -tags aflow_profile_button -initial_state hidden \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::prep
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
-        if {$::settings(skin) == "DSx"} {
-            set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
+        if {$title_test == "A-Flow /" } {
+            ::plugins::A_Flow_Espresso_Profile::prep
+            ::plugins::A_Flow_Espresso_Profile::demo_graph
+            if {$::settings(skin) == "DSx"} {
+                set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
+            }
+            dui page load Aflowset
+        } elseif {$title_test == "D-Flow /" } {
+            ::plugins::D_Flow_Espresso_Profile::prep
+            ::plugins::D_Flow_Espresso_Profile::demo_graph
+            if {$::settings(skin) == "DSx"} {
+                set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
+            }
+            dui page load Dflowset
         }
-        dui page load Aflowset
     }
 
 dui add dbutton "settings_1" 1330 220 \
@@ -1066,7 +1085,14 @@ dui add dbutton "settings_1" 1330 220 \
             set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
         }
         dui page load Aflowset
-        } else {
+    } elseif {$title_test == "D-Flow /" } {
+                ::plugins::D_Flow_Espresso_Profile::prep
+                ::plugins::D_Flow_Espresso_Profile::demo_graph
+                if {$::settings(skin) == "DSx"} {
+                    set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
+                }
+                dui page load Dflowset
+    } else {
         after 500 update_de1_explanation_chart
         say [translate {settings}] $::settings(sound_button_in)
         set_next_page off $::settings(settings_profile_type)
@@ -1095,7 +1121,14 @@ add_de1_widget "settings_1c" graph 1330 300 {
                 set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
             }
             dui page load Aflowset
-            } else {
+        } elseif {$title_test == "D-Flow /" } {
+                ::plugins::D_Flow_Espresso_Profile::prep
+                ::plugins::D_Flow_Espresso_Profile::demo_graph
+                if {$::settings(skin) == "DSx"} {
+                    set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
+                }
+                dui page load Dflowset
+        } else {
             after 500 update_de1_explanation_chart
             say [translate {settings}] $::settings(sound_button_in)
             set_next_page off $::settings(settings_profile_type)
@@ -1103,8 +1136,8 @@ add_de1_widget "settings_1c" graph 1330 300 {
             set ::settings(active_settings_tab) $::settings(settings_profile_type)
             fill_advanced_profile_steps_listbox
             set_advsteps_scrollbar_dimensions
-            }
         }
+    }
 } -plotbackground #fff -width [rescale_x_skin 1050] -height [rescale_y_skin 450] -borderwidth 1 -background #FFFFFF -plotrelief raised  -plotpady 0 -plotpadx 10
 
 add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature 0.5; profile_has_changed_set } 2380 230 2590 480
@@ -1136,11 +1169,11 @@ proc ::update_de1_plus_advanced_explanation_chart {} {
 rename ::setting_profile_type_to_text ::setting_profile_type_to_text_non_aflow
 proc ::setting_profile_type_to_text {} {
 	set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-    if {$title_test == "A-Flow /" } {
-        dui item show settings_1 new_profile_button*
+    if {$title_test == "A-Flow /" || $title_test == "D-Flow /"} {
+        dui item show settings_1 aflow_profile_button*
         $::globals(widget_profile_name_to_save) configure -state disabled
     } else {
-        dui item hide settings_1 new_profile_button*
+        dui item hide settings_1 aflow_profile_button*
         $::globals(widget_profile_name_to_save) configure -state normal
     }
     if {$title_test == "A-Flow /" } {
