@@ -930,7 +930,7 @@ dui add dbutton "settings_1 settings_3 settings_4" 642 0 1277 188 \
             -labelvariable {} -label_font [dui font get $font 12] -label_fill $font_colour -label_pos {0.5 0.5} \
             -command {
             set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-            if {$title_test == "A-Flow /" } {
+            if {$title_test == "A-Flow /" && [info commands ::plugins::A_Flow_Espresso_Profile::prep] ne ""} {
                 ::plugins::A_Flow_Espresso_Profile::prep
                 ::plugins::A_Flow_Espresso_Profile::demo_graph
                 if {$::settings(skin) == "DSx"} {
@@ -1014,7 +1014,7 @@ add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -noc
 dui add dbutton settings_1 1100 526 \
     -bwidth 200 -bheight 200 -tags new_profile_button -initial_state hidden \
     -command {
-        if {$title_test == "A-Flow /" } {
+        if {$title_test == "A-Flow /" && [info commands ::plugins::A_Flow_Espresso_Profile::prep] ne ""} {
             ::plugins::A_Flow_Espresso_Profile::prep
             ::plugins::A_Flow_Espresso_Profile::demo_graph
             if {$::settings(skin) == "DSx"} {
@@ -1036,7 +1036,7 @@ dui add dbutton "settings_1" 1330 220 \
     -labelvariable {} -label_font [dui font get $font 12] -label_fill $font_colour -label_pos {0.5 0.5} \
     -command {
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-    if {$title_test == "A-Flow /" } {
+    if {$title_test == "A-Flow /" && [info commands ::plugins::A_Flow_Espresso_Profile::prep] ne ""} {
         ::plugins::A_Flow_Espresso_Profile::prep
         ::plugins::A_Flow_Espresso_Profile::demo_graph
         if {$::settings(skin) == "DSx"} {
@@ -1072,7 +1072,7 @@ add_de1_widget "settings_1c" graph 1330 300 {
     $::preview_graph_advanced axis configure y -color #5a5d75 -tickfont Helv_6 -min 0.0 -max 12 -majorticks {1 2 3 4 5 6 7 8 9 10 11 12} -title [translate "Advanced"] -titlefont Helv_8 -titlecolor #5a5d75;
     bind $::preview_graph_advanced [platform_button_press] {
         set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-        if {$title_test == "A-Flow /" } {
+        if {$title_test == "A-Flow /" && [info commands ::plugins::A_Flow_Espresso_Profile::prep] ne ""} {
             ::plugins::A_Flow_Espresso_Profile::prep
             ::plugins::A_Flow_Espresso_Profile::demo_graph
             if {$::settings(skin) == "DSx"} {
@@ -1127,7 +1127,7 @@ proc ::update_de1_plus_advanced_explanation_chart {} {
 rename ::setting_profile_type_to_text ::setting_profile_type_to_text_default
 proc ::setting_profile_type_to_text {} {
 	set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-    if {$title_test == "A-Flow /" || $title_test == "D-Flow /" } {
+    if {$title_test == "D-Flow /" || $title_test == "A-Flow /"} {
         dui item show settings_1 new_profile_button*
         $::globals(widget_profile_name_to_save) configure -state disabled
     } else {
