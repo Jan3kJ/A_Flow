@@ -6,7 +6,7 @@ namespace eval ::plugins::${plugin_name} {
     variable author "Damian Brakel, modified by Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow"
-    variable version 0.1
+    variable version 0.2
     variable min_de1app_version {1.36.7}
 
 
@@ -150,7 +150,7 @@ proc set_Aflow_default {} {
     set ::settings(advanced_shot) {
         {exit_if 1 flow 4.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name Fill pressure 3.0 pump flow sensor coffee exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.00 max_flow_or_pressure 8.0 seconds 15 exit_pressure_under 0} 
         {exit_if 0 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 93.0 weight 6.00 name Infuse pressure 3.0 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 exit_pressure_under 0 seconds 60} 
-        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.00 weight 0.0 name {Pressure Up} pressure 9 pump pressure sensor coffee exit_type flow_over exit_flow_over 3.00 exit_pressure_over 8.5 max_flow_or_pressure 0 seconds 6.00 exit_pressure_under 0} 
+        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.00 weight 0.0 name {Pressure Up} pressure 9 pump pressure sensor coffee exit_type flow_over exit_flow_over 3.00 exit_pressure_over 8.5 max_flow_or_pressure 0 seconds 6 exit_pressure_under 0} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 1.5 temperature 93.0 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 exit_pressure_over 11 max_flow_or_pressure 0 seconds 6 exit_pressure_under 1} 
         {exit_if 0 flow 1.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {Flow Start} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
         {exit_if 0 flow 2.50 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Extraction} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 9 exit_pressure_over 11 exit_pressure_under 0 seconds 60}}
@@ -202,12 +202,13 @@ proc prep { args } {
         set ::Aflow_filling_temperature $filling(temperature)
         set ::Aflow_filling_flow $filling(flow)
         array set soaking [lindex $::settings(advanced_shot) 1]
-        set ::Aflow_soaking_seconds [round_to_one_digits $soaking(seconds)]
+        set ::Aflow_soaking_seconds [round_to_one_digits $soaking(seconds)]        
         set ::Aflow_soaking_pressure $soaking(pressure)
         set ::Aflow_soaking_volume $soaking(volume)
         set ::Aflow_soaking_weight $soaking(weight)
         array set ramp_up [lindex $::settings(advanced_shot) 2]
         array set ramp_down [lindex $::settings(advanced_shot) 3]
+        set ::Aflow_ramp_updown_seconds [round_to_one_digits [expr {$ramp_up(seconds) + $ramp_down(seconds)}]]
         set ::Aflow_pouring_flow [round_to_one_digits $ramp_down(exit_flow_under)]
         set ::Aflow_pouring_pressure $ramp_up(pressure)
         set ::Aflow_pouring_temperature $ramp_up(temperature)
@@ -245,9 +246,11 @@ proc update_A-Flow {} {
     set ramp_up(temperature) $::Aflow_pouring_temperature
     set ramp_up(pressure) $::Aflow_pouring_pressure
     set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
+    set ramp_up(seconds) [round_to_one_digits [expr {$::Aflow_ramp_updown_seconds / 2}]]
 
     set ramp_down(temperature) $::Aflow_pouring_temperature
     set ramp_down(exit_flow_under) $::Aflow_pouring_flow
+    set ramp_down(seconds) [round_to_one_digits [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
 
     set pouring_start(temperature) $::Aflow_pouring_temperature
     set pouring_start(flow) $::Aflow_pouring_flow
@@ -447,7 +450,7 @@ proc demo_graph { {context {}} } {
         set pf_b [expr {$pf*0.8*2}]
         set pf_a [expr {$pf*0.3*2}]
         espresso_de1_explanation_chart_flow append {$ff $ff $ff $ff 0.0 0.0 0.0 0.0 0.0 0 0 $pf_2 $pf}
-        espresso_de1_explanation_chart_elapsed append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15 19 26}
+        espresso_de1_explanation_chart_elapsed append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15 20 26}
         espresso_de1_explanation_chart_elapsed_flow append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15 20 26}
 
         array set props [lindex $::settings(advanced_shot) 5]
@@ -583,9 +586,9 @@ dui add dtext $page_name 1960 1080 -justify center -anchor center -font [dui fon
 dui add variable $page_name 1540 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_temperature_setting $::Aflow_pouring_temperature]}
 dui add variable $page_name 1780 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_flow_measurement $::Aflow_pouring_flow]}
 dui add variable $page_name 1970 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_pressure_measurement $::Aflow_pouring_pressure]}
-dui add dtext $page_name 2200 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {volume}
+dui add dtext $page_name 2200 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
 dui add dtext $page_name 2380 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
-dui add variable $page_name 2200 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_stop_at_volume_measurement $::settings(final_desired_shot_volume_advanced)]}
+dui add variable $page_name 2200 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow_Espresso_Profile::format_seconds $::Aflow_ramp_updown_seconds]}
 dui add variable $page_name 2380 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow_Espresso_Profile::format_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
 # Bean weight
@@ -742,19 +745,16 @@ dui add dbutton $page_name 2110 1050 \
     -bwidth 180 -bheight 200 -tags SAV_up \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
-        set ::settings(final_desired_shot_volume_advanced) [round_to_integer [expr {$::settings(final_desired_shot_volume_advanced) + 1}]]
-        range_check_shot_variables
-        profile_has_changed_set
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds + 1}]]
+        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
     }
 dui add dbutton $page_name 2110 1250 \
     -bwidth 180 -bheight 200 -tags SAV_down \
     -label \uf107 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
-        set ::settings(final_desired_shot_volume_advanced) [round_to_integer [expr {$::settings(final_desired_shot_volume_advanced) - 1}]]
-        range_check_shot_variables
-        profile_has_changed_set
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds - 1}]]
+        if {$::Aflow_ramp_updown_seconds < 0} {set ::Aflow_ramp_updown_seconds 0}
+        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
     }
 
 dui add dbutton $page_name 2290 1050 \
