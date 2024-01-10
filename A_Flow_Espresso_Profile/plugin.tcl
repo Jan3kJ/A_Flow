@@ -1,5 +1,5 @@
 ### By Damian Brakel ###
-set plugin_name "A_Flow_Espresso_Profile"
+set plugin_name "A_Flow"
 
 namespace eval ::plugins::${plugin_name} {
     # These are shown in the plugin selection page
