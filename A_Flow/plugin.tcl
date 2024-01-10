@@ -208,7 +208,7 @@ proc prep { args } {
         set ::Aflow_soaking_weight $soaking(weight)
         array set ramp_up [lindex $::settings(advanced_shot) 2]
         array set ramp_down [lindex $::settings(advanced_shot) 3]
-        set ::Aflow_ramp_updown_seconds [round_to_one_digits [expr {$ramp_up(seconds) + $ramp_down(seconds)}]]
+        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$ramp_up(seconds) + $ramp_down(seconds)}]]
         set ::Aflow_pouring_flow [round_to_one_digits $ramp_down(exit_flow_under)]
         set ::Aflow_pouring_pressure $ramp_up(pressure)
         set ::Aflow_pouring_temperature $ramp_up(temperature)
@@ -246,11 +246,11 @@ proc update_A-Flow {} {
     set ramp_up(temperature) $::Aflow_pouring_temperature
     set ramp_up(pressure) $::Aflow_pouring_pressure
     set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
-    set ramp_up(seconds) [round_to_one_digits [expr {$::Aflow_ramp_updown_seconds / 2}]]
+    set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
 
     set ramp_down(temperature) $::Aflow_pouring_temperature
     set ramp_down(exit_flow_under) $::Aflow_pouring_flow
-    set ramp_down(seconds) [round_to_one_digits [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
+    set ramp_down(seconds) [round_to_integer [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
 
     set pouring_start(temperature) $::Aflow_pouring_temperature
     set pouring_start(flow) $::Aflow_pouring_flow
@@ -424,6 +424,8 @@ proc demo_graph { {context {}} } {
         espresso_de1_explanation_chart_flow append 0
         espresso_de1_explanation_chart_elapsed append 0
         espresso_de1_explanation_chart_elapsed_flow append 0
+        
+        # Filling and soaking
         array set props [lindex $::settings(advanced_shot) 0]
         set c 0
         while {$c < 12} {
@@ -431,44 +433,55 @@ proc demo_graph { {context {}} } {
             espresso_de1_explanation_chart_temperature append $::Aflow_filling_temperature
             espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_filling_temperature / 10.0}]
         }
+        set sp $::Aflow_soaking_pressure
+        set sp_b [expr {$sp*0.93}]
+        set sp_a [expr {$sp*0.7}]
+        set ff $::Aflow_filling_flow
+        espresso_de1_explanation_chart_pressure append {0.0 0.0 $sp_a $sp_b $sp $sp $sp $sp $sp $sp $sp}  
+        espresso_de1_explanation_chart_flow append {$ff $ff $ff $ff 0.0 0.0 0.0 0.0 0.0 0 0}
+        espresso_de1_explanation_chart_elapsed append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15}
+        espresso_de1_explanation_chart_elapsed_flow append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15}
+
+        # pressure ramp up and down
         set c 0
         while {$c < 3} {
             incr c
             espresso_de1_explanation_chart_temperature append $::Aflow_pouring_temperature
             espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
         }
-        set sp $::Aflow_soaking_pressure
-        set sp_b [expr {$sp*0.93}]
-        set sp_a [expr {$sp*0.7}]
-        set pp $::Aflow_pouring_pressure
-        set pp_b [expr {$pp*0.8}]
-        set pp_a [expr {$pp*0.5}]
-        espresso_de1_explanation_chart_pressure append {0.0 0.0 $sp_a $sp_b $sp $sp $sp $sp $sp $sp $sp $pp $::Aflow_ramp_down_pressure}  
-        set ff $::Aflow_filling_flow
         set pf $::Aflow_pouring_flow        
         set pf_2 [expr {$pf*2}]
-        set pf_b [expr {$pf*0.8*2}]
-        set pf_a [expr {$pf*0.3*2}]
-        espresso_de1_explanation_chart_flow append {$ff $ff $ff $ff 0.0 0.0 0.0 0.0 0.0 0 0 $pf_2 $pf}
-        espresso_de1_explanation_chart_elapsed append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15 20 26}
-        espresso_de1_explanation_chart_elapsed_flow append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15 20 26}
+        set pp $::Aflow_pouring_pressure
+        set pp_a [expr {$pp*0.5}]
+        array set ramp_up [lindex $::settings(advanced_shot) 2]
+        array set ramp_down [lindex $::settings(advanced_shot) 3]
+        set ramp_up_end [expr {15 + $ramp_up(seconds)}]
+        set ramp_down_end [expr {$ramp_up_end + $ramp_down(seconds)}]
 
+        espresso_de1_explanation_chart_pressure append {$pp $::Aflow_ramp_down_pressure}  
+        espresso_de1_explanation_chart_flow append {$pf_2 $pf}
+        espresso_de1_explanation_chart_elapsed append {$ramp_up_end  $ramp_down_end}
+        espresso_de1_explanation_chart_elapsed_flow append {$ramp_up_end  $ramp_down_end}
+
+
+        # final flow pouring 
         array set props [lindex $::settings(advanced_shot) 5]
         if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(final_desired_shot_volume_advanced) < $::settings(final_desired_shot_weight_advanced)} {
             set shotendtime [expr {$::settings(final_desired_shot_volume_advanced) / [ifexists props(flow)] + 16}]
         } else {
             set shotendtime [expr {$::settings(final_desired_shot_weight_advanced) / [ifexists props(flow)] + 16}]
         }
-        if {$shotendtime > 26.1} {
+        if {$shotendtime > $ramp_down_end} {
+            set flow_ramp_start [expr {$ramp_down_end + 0.1}]
             espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
             espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
             espresso_de1_explanation_chart_pressure append $pp
             espresso_de1_explanation_chart_flow append $pf
-            espresso_de1_explanation_chart_elapsed append 26.1
-            espresso_de1_explanation_chart_elapsed_flow append 26.1
+            espresso_de1_explanation_chart_elapsed append $flow_ramp_start
+            espresso_de1_explanation_chart_elapsed_flow append $flow_ramp_start
 
             espresso_de1_explanation_chart_pressure append [ifexists props(max_flow_or_pressure)]
-            espresso_de1_explanation_chart_flow append [expr {($shotendtime - 26.1) * ([ifexists props(flow)] / [ifexists props(seconds)]) + $pf}]
+            espresso_de1_explanation_chart_flow append [expr {($shotendtime - $flow_ramp_start) * ([ifexists props(flow)] / [ifexists props(seconds)]) + $pf}]
             #espresso_de1_explanation_chart_flow append $pf
             espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
             espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
