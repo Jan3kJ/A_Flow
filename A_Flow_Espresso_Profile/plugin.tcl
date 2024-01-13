@@ -1,12 +1,12 @@
 ### By Damian Brakel ###
-set plugin_name "A_Flow"
+set plugin_name "A_Flow_Espresso_Profile"
 
 namespace eval ::plugins::${plugin_name} {
     # These are shown in the plugin selection page
     variable author "Damian Brakel, modified by Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow"
-    variable version 0.2
+    variable version 0.3
     variable min_de1app_version {1.36.7}
 
 
@@ -443,26 +443,54 @@ proc demo_graph { {context {}} } {
         espresso_de1_explanation_chart_elapsed_flow append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15}
 
         # pressure ramp up and down
-        set c 0
-        while {$c < 3} {
-            incr c
-            espresso_de1_explanation_chart_temperature append $::Aflow_pouring_temperature
-            espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
-        }
+
         set pf $::Aflow_pouring_flow        
         set pf_2 [expr {$pf*2}]
         set pp $::Aflow_pouring_pressure
         set pp_a [expr {$pp*0.5}]
         array set ramp_up [lindex $::settings(advanced_shot) 2]
         array set ramp_down [lindex $::settings(advanced_shot) 3]
-        set ramp_up_end [expr {15 + $ramp_up(seconds)}]
+        set ramp_up_end [round_to_integer [expr {15 + $ramp_up(seconds)}]]
         set ramp_down_end [expr {$ramp_up_end + $ramp_down(seconds)}]
 
-        espresso_de1_explanation_chart_pressure append {$pp $::Aflow_ramp_down_pressure}  
-        espresso_de1_explanation_chart_flow append {$pf_2 $pf}
-        espresso_de1_explanation_chart_elapsed append {$ramp_up_end  $ramp_down_end}
-        espresso_de1_explanation_chart_elapsed_flow append {$ramp_up_end  $ramp_down_end}
+        set ramp_start_time 15.1
+        set time_array {}
+        set time $ramp_start_time
+        while {$time < $ramp_up_end} {
+            lappend time_array $time
+            set time [expr {$time + 0.5}]
+        }
+        
+        foreach i $time_array {
+            set linear_pressure [expr {$sp + ($pp - $sp) * ($i - $ramp_start_time) / ($ramp_up_end - $ramp_start_time)}]
+            set linear_flow [expr {($pf_2) * ($i - $ramp_start_time) / ($ramp_up_end - $ramp_start_time)}]
 
+            espresso_de1_explanation_chart_pressure append $linear_pressure
+            espresso_de1_explanation_chart_flow append $linear_flow
+            espresso_de1_explanation_chart_elapsed append $i
+            espresso_de1_explanation_chart_elapsed_flow append $i        
+            espresso_de1_explanation_chart_temperature append $::Aflow_pouring_temperature
+            espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
+        }
+
+        set time_array {}
+        set time $ramp_up_end
+        while {$time < $ramp_down_end} {
+            lappend time_array $time
+            set time [expr {$time + 0.5}]
+        }
+
+        foreach i $time_array {
+            set linear_pressure [expr {$pp - ($pp - $::Aflow_ramp_down_pressure) * ($i - $ramp_up_end) / ($ramp_down_end - $ramp_up_end)}]
+            set linear_flow [expr {$pf_2 - ($pf_2 - $pf) * ($i - $ramp_up_end) / ($ramp_down_end - $ramp_up_end)}]
+
+            espresso_de1_explanation_chart_pressure append $linear_pressure
+            espresso_de1_explanation_chart_flow append $linear_flow
+            espresso_de1_explanation_chart_elapsed append $i
+            espresso_de1_explanation_chart_elapsed_flow append $i   
+            espresso_de1_explanation_chart_temperature append $::Aflow_pouring_temperature
+            espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
+        }
 
         # final flow pouring 
         array set props [lindex $::settings(advanced_shot) 5]
