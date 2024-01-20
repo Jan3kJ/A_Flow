@@ -426,24 +426,24 @@ proc demo_graph { {context {}} } {
         espresso_de1_explanation_chart_elapsed_flow append 0
         
         # Filling and soaking
-        array set props [lindex $::settings(advanced_shot) 0]
-        set c 0
-        while {$c < 12} {
-            incr c
-            espresso_de1_explanation_chart_temperature append $::Aflow_filling_temperature
-            espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_filling_temperature / 10.0}]
-        }
+        #array set props [lindex $::settings(advanced_shot) 0]
         set sp $::Aflow_soaking_pressure
         set sp_b [expr {$sp*0.93}]
         set sp_a [expr {$sp*0.7}]
         set ff $::Aflow_filling_flow
-        espresso_de1_explanation_chart_pressure append {0.0 0.0 $sp_a $sp_b $sp $sp $sp $sp $sp $sp $sp}  
-        espresso_de1_explanation_chart_flow append {$ff $ff $ff $ff 0.0 0.0 0.0 0.0 0.0 0 0}
-        espresso_de1_explanation_chart_elapsed append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15}
-        espresso_de1_explanation_chart_elapsed_flow append {0.008 0.994 2.03 3.015 4 4.005 6.036 7.03 10 12 15}
+        espresso_de1_explanation_chart_pressure append {0.0 0.0 $sp_a $sp_b $sp $sp}  
+        espresso_de1_explanation_chart_flow append {$ff $ff $ff $ff 0.1 0.1}
+        espresso_de1_explanation_chart_elapsed append {0.008 0.994 2.03 3.015 4 15}
+        espresso_de1_explanation_chart_elapsed_flow append {0.008 0.994 2.03 3.015 4 15}
+        
+        set filling_temperature $::Aflow_filling_temperature
+        foreach _ [espresso_de1_explanation_chart_pressure range 0 end] {
+            espresso_de1_explanation_chart_temperature append $filling_temperature
+            espresso_de1_explanation_chart_temperature_10 append [expr {$filling_temperature / 10.0}]
+        }
+
 
         # pressure ramp up and down
-
         set pf $::Aflow_pouring_flow        
         set pf_2 [expr {$pf*2}]
         set pp $::Aflow_pouring_pressure
@@ -463,7 +463,7 @@ proc demo_graph { {context {}} } {
         
         foreach i $time_array {
             set linear_pressure [expr {$sp + ($pp - $sp) * ($i - $ramp_start_time) / ($ramp_up_end - $ramp_start_time)}]
-            set linear_flow [expr {($pf_2) * ($i - $ramp_start_time) / ($ramp_up_end - $ramp_start_time)}]
+            set linear_flow [expr {0.1 + ($pf_2 - 0.1) * ($i - $ramp_start_time) / ($ramp_up_end - $ramp_start_time)}]
 
             espresso_de1_explanation_chart_pressure append $linear_pressure
             espresso_de1_explanation_chart_flow append $linear_flow
