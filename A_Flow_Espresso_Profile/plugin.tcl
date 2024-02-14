@@ -6,7 +6,7 @@ namespace eval ::plugins::${plugin_name} {
     variable author "Damian Brakel, modified by Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow"
-    variable version 0.3
+    variable version 0.4
     variable min_de1app_version {1.36.7}
 
 
@@ -134,6 +134,7 @@ if {$::settings(skin) == "DSx"} {
     add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox; restore_espresso_chart; save_settings_to_de1; fill_profiles_listbox ; fill_extensions_listbox; ::plugins::A_Flow_Espresso_Profile::prep} 1505 1430 2015 1600
 }
 
+
 ################ procedures
 proc main {} {
 }
@@ -148,7 +149,7 @@ check_Roboto-Regular_exists
 ### Check / write profile
 proc set_Aflow_default {} {
     set ::settings(advanced_shot) {
-        {exit_if 1 flow 4.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name Fill pressure 3.0 pump flow sensor coffee exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.00 max_flow_or_pressure 8.0 seconds 15 exit_pressure_under 0} 
+        {exit_if 1 flow 8.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name Fill pressure 3.0 pump flow sensor coffee exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.00 max_flow_or_pressure 8.0 seconds 15 exit_pressure_under 0} 
         {exit_if 0 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 93.0 weight 6.00 name Infuse pressure 3.0 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 exit_pressure_under 0 seconds 60} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.00 weight 0.0 name {Pressure Up} pressure 9 pump pressure sensor coffee exit_type flow_over exit_flow_over 3.00 exit_pressure_over 8.5 max_flow_or_pressure 0 seconds 6 exit_pressure_under 0} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 1.5 temperature 93.0 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 exit_pressure_over 11 max_flow_or_pressure 0 seconds 6 exit_pressure_under 1} 
@@ -213,6 +214,11 @@ proc prep { args } {
         set ::Aflow_pouring_pressure $ramp_up(pressure)
         set ::Aflow_pouring_temperature $ramp_up(temperature)
         set ::Aflow_ramp_down_pressure $ramp_down(pressure)
+        if {$ramp_down(seconds) > 0} {
+            set ::ramp_down_enabled true
+        } else {
+            set ::ramp_down_enabled false
+        }
     }
 }
 
@@ -234,9 +240,6 @@ proc update_A-Flow {} {
     array set pouring_start [lindex $::settings(advanced_shot) 4]
     array set pouring [lindex $::settings(advanced_shot) 5]
     set filling(temperature) $::Aflow_filling_temperature
-    ### set filling(pressure) $::Aflow_soaking_pressure
-    ### set filling(exit_pressure_over) [round_to_one_digits [expr {$::Aflow_soaking_pressure / 2}]]
-    ### if {$filling(exit_pressure_over) < 0.9} {set filling(exit_pressure_over) 0.9}
     set soaking(temperature) $::Aflow_filling_temperature
     set soaking(pressure) $::Aflow_soaking_pressure
     set soaking(seconds) $::Aflow_soaking_seconds
@@ -245,12 +248,18 @@ proc update_A-Flow {} {
     
     set ramp_up(temperature) $::Aflow_pouring_temperature
     set ramp_up(pressure) $::Aflow_pouring_pressure
-    set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
-    set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
 
     set ramp_down(temperature) $::Aflow_pouring_temperature
     set ramp_down(exit_flow_under) $::Aflow_pouring_flow
-    set ramp_down(seconds) [round_to_integer [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
+    if {$::ramp_down_enabled} {
+        set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
+        set ramp_down(seconds) [round_to_integer [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
+        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
+    } else {
+        set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds}]]
+        set ramp_down(seconds) 0
+        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow}]] 
+    }
 
     set pouring_start(temperature) $::Aflow_pouring_temperature
     set pouring_start(flow) $::Aflow_pouring_flow
@@ -442,10 +451,13 @@ proc demo_graph { {context {}} } {
             espresso_de1_explanation_chart_temperature_10 append [expr {$filling_temperature / 10.0}]
         }
 
-
         # pressure ramp up and down
         set pf $::Aflow_pouring_flow        
-        set pf_2 [expr {$pf*2}]
+        if {$::ramp_down_enabled} { 
+            set pf_2 [expr {$pf*2}]
+        } else {
+            set pf_2 $pf
+        }
         set pp $::Aflow_pouring_pressure
         set pp_a [expr {$pp*0.5}]
         array set ramp_up [lindex $::settings(advanced_shot) 2]
@@ -473,23 +485,25 @@ proc demo_graph { {context {}} } {
             espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
         }
 
-        set time_array {}
-        set time $ramp_up_end
-        while {$time < $ramp_down_end} {
-            lappend time_array $time
-            set time [expr {$time + 0.5}]
-        }
+        if {$::ramp_down_enabled} {
+            set time_array {}
+            set time $ramp_up_end
+            while {$time < $ramp_down_end} {
+                lappend time_array $time
+                set time [expr {$time + 0.5}]
+            }
 
-        foreach i $time_array {
-            set linear_pressure [expr {$pp - ($pp - $::Aflow_ramp_down_pressure) * ($i - $ramp_up_end) / ($ramp_down_end - $ramp_up_end)}]
-            set linear_flow [expr {$pf_2 - ($pf_2 - $pf) * ($i - $ramp_up_end) / ($ramp_down_end - $ramp_up_end)}]
+            foreach i $time_array {
+                set linear_pressure [expr {$pp - ($pp - $::Aflow_ramp_down_pressure) * ($i - $ramp_up_end) / ($ramp_down_end - $ramp_up_end)}]
+                set linear_flow [expr {$pf_2 - ($pf_2 - $pf) * ($i - $ramp_up_end) / ($ramp_down_end - $ramp_up_end)}]
 
-            espresso_de1_explanation_chart_pressure append $linear_pressure
-            espresso_de1_explanation_chart_flow append $linear_flow
-            espresso_de1_explanation_chart_elapsed append $i
-            espresso_de1_explanation_chart_elapsed_flow append $i   
-            espresso_de1_explanation_chart_temperature append $::Aflow_pouring_temperature
-            espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
+                espresso_de1_explanation_chart_pressure append $linear_pressure
+                espresso_de1_explanation_chart_flow append $linear_flow
+                espresso_de1_explanation_chart_elapsed append $i
+                espresso_de1_explanation_chart_elapsed_flow append $i   
+                espresso_de1_explanation_chart_temperature append $::Aflow_pouring_temperature
+                espresso_de1_explanation_chart_temperature_10 append [expr {$::Aflow_pouring_temperature / 10.0}]
+            }
         }
 
         # final flow pouring 
@@ -508,7 +522,7 @@ proc demo_graph { {context {}} } {
             espresso_de1_explanation_chart_elapsed append $flow_ramp_start
             espresso_de1_explanation_chart_elapsed_flow append $flow_ramp_start
 
-            espresso_de1_explanation_chart_pressure append [ifexists props(max_flow_or_pressure)]
+            espresso_de1_explanation_chart_pressure append $pp
             espresso_de1_explanation_chart_flow append [expr {($shotendtime - $flow_ramp_start) * ([ifexists props(flow)] / [ifexists props(seconds)]) + $pf}]
             #espresso_de1_explanation_chart_flow append $pf
             espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
@@ -857,7 +871,9 @@ dui add dbutton $page_set 500 300 \
 dui add dbutton $page_set 85 555 \
     -bwidth 630 -bheight 230 \
     -shape outline -width $button_outline_width -outline $button_outline_colour \
-
+    -command {
+        # do nothing to avoid warning
+    }
 
 dui add dbutton $page_set 100 570 \
     -bwidth 600 -bheight 100 \
@@ -875,6 +891,25 @@ add_de1_widget $page_set entry 270 690  {
     ::plugins::A_Flow_Espresso_Profile::save_A-Flow_profile; hide_android_keyboard}
     bind $widget <Leave> hide_android_keyboard
 } -width 18 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::AFlow_name -relief flat  -highlightthickness 1 -highlightcolor #000000
+
+# Add toggle widget below the existing widget
+dui add dtext $page_set 230 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text {Ramp down}
+dui add dtoggle $page_set 100 830 -variable ::ramp_down_enabled -orient horizontal
+#
+proc ramp_down_toggle {} {
+        if {$::ramp_down_enabled} {
+            set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds * 2}]]
+        } else {
+            set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
+        }
+        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+}
+
+dui add dbutton $page_name 100 830 \
+    -command {
+        set ::ramp_down_enabled [expr {!$::ramp_down_enabled}]
+        ::plugins::A_Flow_Espresso_Profile::ramp_down_toggle
+    }
 
 ### Graph
 dui add dtext $page_set 1140 270  -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -text {| <}
@@ -899,7 +934,7 @@ add_de1_widget "Aflowset" graph 1030 290 {
 } -plotbackground #1e1e1e -width [rescale_x_skin 1250] -height [rescale_y_skin 590] -borderwidth 1 -background #1e1e1e -plotrelief flat
 ::plugins::A_Flow_Espresso_Profile::select_flow_curve
 
-dui add dbutton Aflowset 2300 400 \
+dui add dbutton $page_set 2300 400 \
     -bwidth 200 -bheight 200 \
     -shape outline -width $button_outline_width -outline $button_outline_colour \
     -label {showing} -label_font [dui font get $font 12] -label_justify center -label_anchor center -label_fill $font_colour -label_pos {0.5 0.28} \

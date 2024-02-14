@@ -773,7 +773,9 @@ dui add dbutton $page_set 500 300 \
 dui add dbutton $page_set 85 555 \
     -bwidth 630 -bheight 230 \
     -shape outline -width $button_outline_width -outline $button_outline_colour \
-
+    -command {
+        # do nothing to avoid warning
+    }
 
 dui add dbutton $page_set 100 570 \
     -bwidth 600 -bheight 100 \
