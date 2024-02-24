@@ -219,6 +219,12 @@ proc prep { args } {
         } else {
             set ::ramp_down_enabled false
         }
+        array set pouring [lindex $::settings(advanced_shot) 5]
+        if {$pouring(flow) > $::Aflow_pouring_flow} {
+            set ::flow_extraction_up true
+        } else {
+            set ::flow_extraction_up false
+        }
     }
 }
 
@@ -265,7 +271,12 @@ proc update_A-Flow {} {
     set pouring_start(flow) $::Aflow_pouring_flow
 
     set pouring(temperature) $::Aflow_pouring_temperature
-    set pouring(flow) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
+    if {$::flow_extraction_up} {
+        set pouring(flow) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
+    } else {
+        set pouring(flow) [round_to_one_digits [expr {$::Aflow_pouring_flow /2}]] 
+    }
+    
     set pouring(max_flow_or_pressure) $::Aflow_pouring_pressure
 
     set newprofile {}
@@ -509,9 +520,9 @@ proc demo_graph { {context {}} } {
         # final flow pouring 
         array set props [lindex $::settings(advanced_shot) 5]
         if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(final_desired_shot_volume_advanced) < $::settings(final_desired_shot_weight_advanced)} {
-            set shotendtime [expr {$::settings(final_desired_shot_volume_advanced) / [ifexists props(flow)] + 16}]
+            set shotendtime [expr {$::settings(final_desired_shot_volume_advanced) / $pf + 16}]
         } else {
-            set shotendtime [expr {$::settings(final_desired_shot_weight_advanced) / [ifexists props(flow)] + 16}]
+            set shotendtime [expr {$::settings(final_desired_shot_weight_advanced) / $pf + 16}]
         }
         if {$shotendtime > $ramp_down_end} {
             set flow_ramp_start [expr {$ramp_down_end + 0.1}]
@@ -523,8 +534,7 @@ proc demo_graph { {context {}} } {
             espresso_de1_explanation_chart_elapsed_flow append $flow_ramp_start
 
             espresso_de1_explanation_chart_pressure append $pp
-            espresso_de1_explanation_chart_flow append [expr {($shotendtime - $flow_ramp_start) * ([ifexists props(flow)] / [ifexists props(seconds)]) + $pf}]
-            #espresso_de1_explanation_chart_flow append $pf
+            espresso_de1_explanation_chart_flow append [expr {(([ifexists props(flow)] - $pf) / [ifexists props(seconds)]) * ($shotendtime - $flow_ramp_start) + $pf}]
             espresso_de1_explanation_chart_temperature append [ifexists props(temperature)]
             espresso_de1_explanation_chart_temperature_10 append [expr {[ifexists props(temperature)] / 10.0}]
             espresso_de1_explanation_chart_elapsed append $shotendtime
@@ -893,22 +903,33 @@ add_de1_widget $page_set entry 270 690  {
 } -width 18 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::AFlow_name -relief flat  -highlightthickness 1 -highlightcolor #000000
 
 # Add toggle widget below the existing widget
+# toggle pressure ramp down on/off
 dui add dtext $page_set 230 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text {Ramp down}
 dui add dtoggle $page_set 100 830 -variable ::ramp_down_enabled -orient horizontal
-#
+
 proc ramp_down_toggle {} {
-        if {$::ramp_down_enabled} {
-            set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds * 2}]]
-        } else {
-            set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
-        }
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+    if {$::ramp_down_enabled} {
+        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds * 2}]]
+    } else {
+        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
+    }
+    ::plugins::A_Flow_Espresso_Profile::update_A-Flow
 }
 
 dui add dbutton $page_name 100 830 \
     -command {
         set ::ramp_down_enabled [expr {!$::ramp_down_enabled}]
         ::plugins::A_Flow_Espresso_Profile::ramp_down_toggle
+    }
+
+# toggle pressure flow ramp up/down
+dui add dtext $page_set 630 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text {Flow up}
+dui add dtoggle $page_set 500 830 -variable ::flow_extraction_up -orient horizontal
+
+dui add dbutton $page_name 500 830 \
+    -command {
+        set ::flow_extraction_up [expr {!$::flow_extraction_up}]
+        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
     }
 
 ### Graph
