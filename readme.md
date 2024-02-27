@@ -30,6 +30,10 @@ Infuse parameters are not changed compared to D-Flow. Only the fill step is diff
   * `Ramp down` disabled: duration of pressure up step
 * **Weight**: final stop by weight threshold
 
+The screenshot below shows flow, pressure and time parameter and points to the parts, which are defined by these parameters.
+
+![a_flow.jpg](img%2Fa_flow.jpg)
+
 ### Comparison
 The profile is a mix of D-Flow and Adaptive (for medium roasts) profile plus an optional pressure decline step, similar to LRv2 and other lever profiles.
 The main purpose is an easy way to try the different approaches to find the best fit for the beans at hand. 
