@@ -3,10 +3,10 @@ set plugin_name "A_Flow_Espresso_Profile"
 
 namespace eval ::plugins::${plugin_name} {
     # These are shown in the plugin selection page
-    variable author "Damian Brakel, modified by Janek"
+    variable author "originally by Damian Brakel, modified by Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow"
-    variable version 0.4
+    variable version 0.5
     variable min_de1app_version {1.36.7}
 
 
@@ -58,7 +58,7 @@ Which means we would need to grind finer to maintain the same pour pressure/flow
 Finer grinds also reduce body and can increase bitterness, so the aim is to find a ballence for your prefered taste.
 
 A longer infusion also means we have a higher pecentage of the shot being at 3 bar.
-0.2g to 4g is a good starting range to experiment with.
+4g to 6g is a good starting range to experiment with.
 }
 
 set info_pour_temp {
@@ -70,7 +70,9 @@ Lower temperatures often work better with slower extraction rates.
 }
 
 set info_pour_limits {
-A-Flow uses flow with pressure limits, allows for a greater grind range, giving better control and resulting in less wasted shots.
+A-Flow uses a pressure ramp to slowly increase the extraction flow after infusion phase. If enabled follow by a pressure decline step to reach a defined extraction flow rate. Final extraction flow is either slowly increase or decreasing.
+
+It's possible to skip the pressure increase and decline by setting the pouring time to 0. This lead to a similar profile as D-Flow. 
 
 Increasing pressure will shift taste from wine like to a more syrupy texture, it also
 shifts tastes from clear delicate flavours to more muddled flavours.
