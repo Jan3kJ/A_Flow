@@ -6,7 +6,7 @@ namespace eval ::plugins::${plugin_name} {
     variable author "originally by Damian Brakel, modified by Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow"
-    variable version 0.5
+    variable version 0.6
     variable min_de1app_version {1.36.7}
 
 
@@ -276,7 +276,7 @@ proc update_A-Flow {} {
     if {$::flow_extraction_up} {
         set pouring(flow) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
     } else {
-        set pouring(flow) [round_to_one_digits [expr {$::Aflow_pouring_flow /2}]] 
+        set pouring(flow) 0 # [round_to_one_digits [expr {$::Aflow_pouring_flow /2}]] 
     }
     
     set pouring(max_flow_or_pressure) $::Aflow_pouring_pressure
