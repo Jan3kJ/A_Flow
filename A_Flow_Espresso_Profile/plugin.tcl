@@ -155,7 +155,7 @@ proc set_Aflow_default {} {
         {exit_if 0 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 93.0 weight 6.00 name Infuse pressure 3.0 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 exit_pressure_under 0 seconds 60} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.00 weight 0.0 name {Pressure Up} pressure 9 pump pressure sensor coffee exit_type flow_over exit_flow_over 3.00 exit_pressure_over 8.5 max_flow_or_pressure 0 seconds 6 exit_pressure_under 0} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 1.5 temperature 93.0 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 exit_pressure_over 11 max_flow_or_pressure 0 seconds 6 exit_pressure_under 1} 
-        {exit_if 0 flow 1.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {Flow Start} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
+        {exit_if 0 flow 1.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type flow_over exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
         {exit_if 0 flow 2.50 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Extraction} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 9 exit_pressure_over 11 exit_pressure_under 0 seconds 60}}
     set ::settings(author) Janek
     set ::settings(espresso_hold_time) 15
@@ -272,11 +272,21 @@ proc update_A-Flow {} {
     set pouring_start(temperature) $::Aflow_pouring_temperature
     set pouring_start(flow) $::Aflow_pouring_flow
 
+    if {$ramp_up(seconds) < 1} {
+        # activate pouring start step to allow fast transition to target flow
+        set pouring_start(seconds) 10
+        set pouring_start(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow - 0.1}]]
+        set pouring_start(exit_type) flow_over
+    } else {
+        # disable step in case ramp up is used
+        set pouring_start(seconds) 0
+    }
+
     set pouring(temperature) $::Aflow_pouring_temperature
     if {$::flow_extraction_up} {
         set pouring(flow) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
     } else {
-        set pouring(flow) 0 # [round_to_one_digits [expr {$::Aflow_pouring_flow /2}]] 
+        set pouring(flow) 0
     }
     
     set pouring(max_flow_or_pressure) $::Aflow_pouring_pressure
