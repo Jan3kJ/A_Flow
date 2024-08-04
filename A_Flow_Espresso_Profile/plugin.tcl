@@ -155,8 +155,8 @@ proc set_Aflow_default {} {
         {exit_if 0 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 93.0 weight 6.00 name Infuse pressure 3.0 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 exit_pressure_under 0 seconds 60} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.00 weight 0.0 name {Pressure Up} pressure 9 pump pressure sensor coffee exit_type flow_over exit_flow_over 3.00 exit_pressure_over 8.5 max_flow_or_pressure 0 seconds 6 exit_pressure_under 0} 
         {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 1.5 temperature 93.0 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 exit_pressure_over 11 max_flow_or_pressure 0 seconds 6 exit_pressure_under 1} 
-        {exit_if 0 flow 1.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type flow_over exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
-        {exit_if 0 flow 2.50 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Extraction} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 9 exit_pressure_over 11 exit_pressure_under 0 seconds 60}}
+        {exit_if 0 flow 2.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type flow_over exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
+        {exit_if 0 flow 2.0 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Extraction} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 9 exit_pressure_over 11 exit_pressure_under 0 seconds 60}}
     set ::settings(author) Janek
     set ::settings(espresso_hold_time) 15
     set ::settings(preinfusion_time) 20
@@ -202,17 +202,18 @@ proc prep { args } {
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
         array set filling [lindex $::settings(advanced_shot) 0]
+        array set soaking [lindex $::settings(advanced_shot) 1]
+        array set ramp_up [lindex $::settings(advanced_shot) 2]
+        array set ramp_down [lindex $::settings(advanced_shot) 3]
+        array set pouring_start [lindex $::settings(advanced_shot) 4]
         set ::Aflow_filling_temperature $filling(temperature)
         set ::Aflow_filling_flow $filling(flow)
-        array set soaking [lindex $::settings(advanced_shot) 1]
         set ::Aflow_soaking_seconds [round_to_one_digits $soaking(seconds)]        
         set ::Aflow_soaking_pressure $soaking(pressure)
         set ::Aflow_soaking_volume $soaking(volume)
         set ::Aflow_soaking_weight $soaking(weight)
-        array set ramp_up [lindex $::settings(advanced_shot) 2]
-        array set ramp_down [lindex $::settings(advanced_shot) 3]
         set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$ramp_up(seconds) + $ramp_down(seconds)}]]
-        set ::Aflow_pouring_flow [round_to_one_digits $ramp_down(exit_flow_under)]
+        set ::Aflow_pouring_flow [round_to_one_digits $pouring_start(flow)]
         set ::Aflow_pouring_pressure $ramp_up(pressure)
         set ::Aflow_pouring_temperature $ramp_up(temperature)
         set ::Aflow_ramp_down_pressure $ramp_down(pressure)
@@ -258,15 +259,17 @@ proc update_A-Flow {} {
     set ramp_up(pressure) $::Aflow_pouring_pressure
 
     set ramp_down(temperature) $::Aflow_pouring_temperature
-    set ramp_down(exit_flow_under) $::Aflow_pouring_flow
+    set ramp_down(exit_flow_under) [round_to_one_digits [expr {$::Aflow_pouring_flow + 0.1}]]
     if {$::ramp_down_enabled} {
         set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
         set ramp_down(seconds) [round_to_integer [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
-        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
+        # exit at 90% of target to avoid overshoot
+        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2 * 0.9}]] 
     } else {
         set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds}]]
         set ramp_down(seconds) 0
-        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow}]] 
+        # exit at 90% of target to avoid overshoot
+        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 0.9}]]  
     }
 
     set pouring_start(temperature) $::Aflow_pouring_temperature
