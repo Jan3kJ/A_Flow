@@ -156,7 +156,6 @@ proc check_profiles_exist {} {
     foreach profile_file $default_profiles_files {
         set profile_name [file tail $profile_file]
         if {[file exists $global_profiles_folder$profile_name] != 1} {
-            puts "copying $profile_name to profiles folder"
             file copy -force $profile_file $global_profiles_folder
         }
     }
@@ -194,7 +193,7 @@ proc set_Aflow_default {} {
     set ::settings(flow_profile_minimum_pressure) 4
     set ::settings(preinfusion_flow_rate) 4
     set ::settings(profile_notes) {A-Flow: an alternative profile for D-Flow}
-    set ::settings(profile_title) {A-Flow / default}
+    set ::settings(profile_title) {A-Flow / default-medium}
     set ::settings(final_desired_shot_volume) 100
     set ::settings(final_desired_shot_weight) 42.0
     set ::settings(final_desired_shot_weight_advanced) 42.0
@@ -246,16 +245,6 @@ proc prep { args } {
         }
     }
 }
-
-if {[file exists "[homedir]/profiles/A-Flow____default.tcl"] != 1} {
-    set ::settings(profile_title) {A-Flow / default}
-    set_Aflow_default
-    set ::settings(original_profile_title) $::settings(profile_title)
-    set ::settings(profile_filename) "A-Flow____default"
-    set ::settings(profile_to_save) $::settings(profile_title)
-    save_profile
-}
-prep
 
 proc update_A-Flow {} {
     array set filling [lindex $::settings(advanced_shot) 0]
@@ -1271,18 +1260,6 @@ add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_but
 add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_button_in); change_espresso_temperature -0.5; profile_has_changed_set } 2380 490 2590 800
 
 ################ Mod external code
-# if {$::settings(skin) == "DSx"} {
-#     if {[file exists "[skin_directory]/DSx_Home_Page/DSx_2021_home.page"] == 1 && $::DSx_settings(DSx_home) == "2021home"} {
-#         dui add variable off [expr {$::DSx_data_x + 480}] [expr {$::DSx_data_y + 672}] -anchor "center" -justify "center" -font [DSx_font font 7] -fill $::DSx_settings(font_colour) -textvariable {[::plugins::A_Flow::A-Flow_data]}
-#     } elseif {$::DSx_home_page_version == {} } {
-#         #dui add variable off 400 682 -anchor "center" -justify "center" -font [DSx_font font 7] -fill $::DSx_settings(font_colour) -textvariable {[::plugins::A_Flow::A-Flow_data]}
-#     }
-
-#     trace add execution load_bluecup {leave} ::plugins::A_Flow::prep
-#     trace add execution load_pinkcup {leave} ::plugins::A_Flow::prep
-#     trace add execution load_orangecup {leave} ::plugins::A_Flow::prep
-# }
-
 rename ::update_de1_plus_advanced_explanation_chart ::update_de1_plus_advanced_explanation_chart_non_aflow
 proc ::update_de1_plus_advanced_explanation_chart {} {
 	set title_test [string range [ifexists ::settings(profile_title)] 0 7]
