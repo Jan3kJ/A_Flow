@@ -263,13 +263,11 @@ proc update_A-Flow {} {
     if {$::ramp_down_enabled} {
         set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
         set ramp_down(seconds) [round_to_integer [expr {($::Aflow_ramp_updown_seconds / 2) + ($::Aflow_ramp_updown_seconds % 2 ? 1 : 0)}]]
-        # exit at 90% of target to avoid overshoot
-        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2 * 0.9}]] 
+        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 2}]] 
     } else {
         set ramp_up(seconds) [round_to_integer [expr {$::Aflow_ramp_updown_seconds}]]
         set ramp_down(seconds) 0
-        # exit at 90% of target to avoid overshoot
-        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow * 0.9}]]  
+        set ramp_up(exit_flow_over) [round_to_one_digits [expr {$::Aflow_pouring_flow}]]  
     }
 
     set pouring_start(temperature) $::Aflow_pouring_temperature
