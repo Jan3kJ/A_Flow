@@ -151,12 +151,12 @@ check_Roboto-Regular_exists
 ### Check / write profile
 proc set_Aflow_default {} {
     set ::settings(advanced_shot) {
-        {exit_if 1 flow 8.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name {Fill} pressure 3.0 pump flow sensor coffee exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.00 max_flow_or_pressure 8.0 seconds 15 exit_pressure_under 0} 
-        {exit_if 1 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 93.0 weight 6.00 name {Infuse} pressure 3.0 sensor coffee pump pressure exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 exit_pressure_under 0 seconds 60} 
-        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.00 weight 0.0 name {Pressure Up} pressure 9 pump pressure sensor coffee exit_type flow_over exit_flow_over 3.00 exit_pressure_over 8.5 max_flow_or_pressure 0 seconds 6 exit_pressure_under 0} 
-        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 1.5 temperature 93.0 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 exit_pressure_over 11 max_flow_or_pressure 0 seconds 6 exit_pressure_under 1} 
-        {exit_if 1 flow 2.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type flow_over exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
-        {exit_if 0 flow 2.0 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 93.0 weight 0.0 name {Flow Extraction} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 9 exit_pressure_over 11 exit_pressure_under 0 seconds 60}}
+        {exit_if 1 flow 8.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 95 weight 0.0 name Fill pressure 3.0 pump flow sensor coffee exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.00 max_flow_or_pressure 8.0 seconds 15 exit_pressure_under 0} 
+        {exit_if 0 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 95 weight 3.6 name Infuse pressure 3.0 pump pressure sensor coffee exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 seconds 60.0 exit_pressure_under 0} 
+        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 95 weight 0.0 name {Pressure Up} pressure 10.0 sensor coffee pump pressure exit_type flow_over exit_flow_over 2.0 max_flow_or_pressure 0 exit_pressure_over 8.5 exit_pressure_under 0 seconds 10} 
+        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 2.0 temperature 95 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 max_flow_or_pressure 0 exit_pressure_over 11 seconds 0 exit_pressure_under 1} 
+        {exit_if 0 flow 2.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {Flow Start} exit_flow_under 0 temperature 95 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
+        {exit_if 0 flow 4.0 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 95 weight 0.0 name {Flow Extraction} pressure 3.0 pump flow sensor coffee exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 10.0 exit_pressure_over 11 seconds 60 exit_pressure_under 0}}
     set ::settings(author) Janek
     set ::settings(espresso_hold_time) 15
     set ::settings(preinfusion_time) 20
@@ -180,8 +180,8 @@ proc set_Aflow_default {} {
     set ::settings(profile_notes) {A-Flow: an alternative profile for D-Flow}
     set ::settings(profile_title) {A-Flow / default}
     set ::settings(final_desired_shot_volume) 100
-    set ::settings(final_desired_shot_weight) 36.0
-    set ::settings(final_desired_shot_weight_advanced) 36.0
+    set ::settings(final_desired_shot_weight) 42.0
+    set ::settings(final_desired_shot_weight_advanced) 42.0
     set ::settings(tank_desired_water_temperature) 0
     set ::settings(final_desired_shot_volume_advanced) 100
     set ::settings(profile_language) en
