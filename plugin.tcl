@@ -138,16 +138,6 @@ if {$::settings(skin) == "DSx"} {
 
 
 ################ procedures
-proc main {} {
-}
-
-proc check_Roboto-Regular_exists {} {
-    if {[file exists "[homedir]/fonts/Roboto-Regular.ttf"] != 1} {
-        file copy -force [homedir]/skins/DSx/DSx_Font_Files/Roboto-Regular.ttf [homedir]/fonts/Roboto-Regular.ttf
-    }
-}
-check_Roboto-Regular_exists
-
 proc check_profiles_exist {} {
     # check for all files in profiles folder if they exist in global profile folder and copy them if not
     set plugins_profiles_folder [homedir]/plugins/A_Flow/profiles/
@@ -160,7 +150,19 @@ proc check_profiles_exist {} {
         }
     }
 }
-check_profiles_exist
+
+proc main {} {
+    check_profiles_exist
+}
+
+proc check_Roboto-Regular_exists {} {
+    if {[file exists "[homedir]/fonts/Roboto-Regular.ttf"] != 1} {
+        file copy -force [homedir]/skins/DSx/DSx_Font_Files/Roboto-Regular.ttf [homedir]/fonts/Roboto-Regular.ttf
+    }
+}
+check_Roboto-Regular_exists
+
+
 
 
 ### Check / write profile
