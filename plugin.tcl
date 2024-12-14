@@ -1,5 +1,5 @@
 ### By Damian Brakel ###
-set plugin_name "A_Flow_Espresso_Profile"
+set plugin_name "A_Flow"
 
 namespace eval ::plugins::${plugin_name} {
     # These are shown in the plugin selection page
@@ -131,9 +131,9 @@ if {$::settings(skin) == "DSx"} {
     set ::DSx_settings(blue_cup_indicator) { }
     set ::DSx_settings(pink_cup_indicator) { }
     clear_profile_font
-    add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); back_to_previous_page; fill_advanced_profile_steps_listbox; restore_espresso_chart; LRv2_preview; DSx_graph_restore; save_settings_to_de1; fill_profiles_listbox; fill_extensions_listbox; refresh_DSx_temperature; ::plugins::A_Flow_Espresso_Profile::prep} 1505 1430 2015 1600
+    add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); back_to_previous_page; fill_advanced_profile_steps_listbox; restore_espresso_chart; LRv2_preview; DSx_graph_restore; save_settings_to_de1; fill_profiles_listbox; fill_extensions_listbox; refresh_DSx_temperature; ::plugins::A_Flow::prep} 1505 1430 2015 1600
     } else {
-    add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox; restore_espresso_chart; save_settings_to_de1; fill_profiles_listbox ; fill_extensions_listbox; ::plugins::A_Flow_Espresso_Profile::prep} 1505 1430 2015 1600
+    add_de1_button $page_set {if {[ifexists ::profiles_hide_mode] == 1} { unset -nocomplain ::profiles_hide_mode; fill_profiles_listbox }; array unset ::settings {\*}; array set ::settings [array get ::settings_backup]; update_de1_explanation_chart; fill_skin_listbox; profile_has_changed_set_colors; say [translate {Cancel}] $::settings(sound_button_in); set_next_page off off; page_show off; fill_advanced_profile_steps_listbox; restore_espresso_chart; save_settings_to_de1; fill_profiles_listbox ; fill_extensions_listbox; ::plugins::A_Flow::prep} 1505 1430 2015 1600
 }
 
 
@@ -147,6 +147,22 @@ proc check_Roboto-Regular_exists {} {
     }
 }
 check_Roboto-Regular_exists
+
+proc check_profiles_exist {} {
+    # check for all files in profiles folder if they exist in global profile folder and copy them if not
+    set plugins_profiles_folder [homedir]/plugins/A_Flow/profiles/
+    set global_profiles_folder [homedir]/profiles/
+    set default_profiles_files [glob -nocomplain $plugins_profiles_folder*.tcl]
+    foreach profile_file $default_profiles_files {
+        set profile_name [file tail $profile_file]
+        if {[file exists $global_profiles_folder$profile_name] != 1} {
+            puts "copying $profile_name to profiles folder"
+            file copy -force $profile_file $global_profiles_folder
+        }
+    }
+}
+check_profiles_exist
+
 
 ### Check / write profile
 proc set_Aflow_default {} {
@@ -303,7 +319,7 @@ proc update_A-Flow {} {
     set ::settings(advanced_shot) $newprofile
     range_check_shot_variables
     profile_has_changed_set
-    ::plugins::A_Flow_Espresso_Profile::demo_graph
+    ::plugins::A_Flow::demo_graph
 }
 
 proc format_seconds {n} {
@@ -382,7 +398,7 @@ proc save_A-Flow_profile {} {
         }
         borg toast [translate "Saved"]
         save_profile
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::demo_graph
 
     } else {
         set ::Aflow_message "$df$::AFlow_name [translate "already exists"]"
@@ -404,7 +420,7 @@ proc A-Flow_data {} {
     if {$title_test == "A-Flow /" } {
         set a [round_to_integer $::Aflow_filling_temperature]
         set b [return_temperature_setting $::Aflow_pouring_temperature]
-        set c [::plugins::A_Flow_Espresso_Profile::format_SAW $::Aflow_soaking_weight]
+        set c [::plugins::A_Flow::format_SAW $::Aflow_soaking_weight]
         set d [return_flow_measurement $::Aflow_pouring_flow]
         set f [return_pressure_measurement $::Aflow_pouring_pressure]
         set s {  }
@@ -419,7 +435,7 @@ proc toggle_graph {} {
     } else {
         set ::settings(A_Flow_graph_style) "Insight"
     }
-    ::plugins::A_Flow_Espresso_Profile::select_flow_curve
+    ::plugins::A_Flow::select_flow_curve
 }
 proc select_flow_curve {} {
     if {$::settings(A_Flow_graph_style) == "Insight"} {
@@ -443,7 +459,7 @@ proc select_flow_curve {} {
 }
 
 proc demo_graph { {context {}} } {
-	::plugins::A_Flow_Espresso_Profile::prep
+	::plugins::A_Flow::prep
 	set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
         espresso_de1_explanation_chart_elapsed length 0
@@ -597,7 +613,7 @@ proc reset_button_canvas {} {
     dui item show Aflowinfo pour_limits_info_button*
     dui item show Aflowinfo pour_stop_info_button*
 
-    set ::plugins::A_Flow_Espresso_Profile::info " "
+    set ::plugins::A_Flow::info " "
 }
 
 ################ page
@@ -625,16 +641,16 @@ dui add canvas_item rect $page_name 2190 1386 2390 1436 -fill #ededfa -width 0 -
 
 ### Settings
 dui add variable $page_name 400 450 -justify center -anchor center -font [dui font get $font 16] -fill #ff574a -textvariable {$::Aflow_message}
-dui add variable $page_name 1000 170 -justify center -anchor center -font [dui font get $font 12] -fill #ff9421 -textvariable {[::plugins::A_Flow_Espresso_Profile::tap_to_update]}
+dui add variable $page_name 1000 170 -justify center -anchor center -font [dui font get $font 12] -fill #ff9421 -textvariable {[::plugins::A_Flow::tap_to_update]}
 
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -tags info_intro -text $::plugins::A_Flow_Espresso_Profile::info_intro
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_dose -text $::plugins::A_Flow_Espresso_Profile::info_dose
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_infuse_temp -text $::plugins::A_Flow_Espresso_Profile::info_infuse_temp
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_infuse_pressure -text $::plugins::A_Flow_Espresso_Profile::info_infuse_pressure
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_infuse_stop -text $::plugins::A_Flow_Espresso_Profile::info_infuse_stop
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_temp -text $::plugins::A_Flow_Espresso_Profile::info_pour_temp
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_limits -text $::plugins::A_Flow_Espresso_Profile::info_pour_limits
-dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_stop -text $::plugins::A_Flow_Espresso_Profile::info_pour_stop
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -tags info_intro -text $::plugins::A_Flow::info_intro
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_dose -text $::plugins::A_Flow::info_dose
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_infuse_temp -text $::plugins::A_Flow::info_infuse_temp
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_infuse_pressure -text $::plugins::A_Flow::info_infuse_pressure
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_infuse_stop -text $::plugins::A_Flow::info_infuse_stop
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_temp -text $::plugins::A_Flow::info_pour_temp
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_limits -text $::plugins::A_Flow::info_pour_limits
+dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_stop -text $::plugins::A_Flow::info_pour_stop
 dui add dtext $page_info 1280 900 -justify center -anchor center -font [dui font get $font 16] -fill #d7d9e6 -text {Tap within this info window to exit}
 
 dui add dtext $page_name 1092 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {infuse until either}
@@ -653,12 +669,12 @@ dui add variable $page_name 680 1250 -justify center -anchor center -font [dui f
 dui add dtext $page_name 910 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
 dui add dtext $page_name 1090 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {volume}
 dui add dtext $page_name 1270 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
-dui add variable $page_name 910 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow_Espresso_Profile::format_seconds $::Aflow_soaking_seconds]}
+dui add variable $page_name 910 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_seconds $::Aflow_soaking_seconds]}
 dui add variable $page_name 1090 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_stop_at_volume_measurement $::Aflow_soaking_volume]}
-dui add variable $page_name 1270 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow_Espresso_Profile::format_SAW $::Aflow_soaking_weight]}
+dui add variable $page_name 1270 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_SAW $::Aflow_soaking_weight]}
 
 dui add dtext $page_name 1960 1010 -justify center -anchor center -font [dui font get $font 24] -fill #d7d9e6 -text {P O U R}
-dui add variable $page_name 2290 1010 -justify center -anchor center -font [dui font get $font 20] -fill #b7b9c6 -textvariable {[::plugins::A_Flow_Espresso_Profile::extraction_ratio]}
+dui add variable $page_name 2290 1010 -justify center -anchor center -font [dui font get $font 20] -fill #b7b9c6 -textvariable {[::plugins::A_Flow::extraction_ratio]}
 dui add dtext $page_name 1540 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {temperature}
 dui add dtext $page_name 1780 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {flow}
 dui add dtext $page_name 1960 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {pressure}
@@ -667,8 +683,8 @@ dui add variable $page_name 1780 1250 -justify center -anchor center -font [dui 
 dui add variable $page_name 1970 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_pressure_measurement $::Aflow_pouring_pressure]}
 dui add dtext $page_name 2200 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
 dui add dtext $page_name 2380 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
-dui add variable $page_name 2200 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow_Espresso_Profile::format_seconds $::Aflow_ramp_updown_seconds]}
-dui add variable $page_name 2380 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow_Espresso_Profile::format_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
+dui add variable $page_name 2200 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_seconds $::Aflow_ramp_updown_seconds]}
+dui add variable $page_name 2380 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
 # Bean weight
 dui add dbutton $page_name 100 1050 \
@@ -693,7 +709,7 @@ dui add dbutton $page_name 340 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_filling_temperature [round_to_integer [expr {$::Aflow_filling_temperature + 1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 340 1250 \
     -bwidth 180 -bheight 200 -tags fill_temp_down \
@@ -701,7 +717,7 @@ dui add dbutton $page_name 340 1250 \
     -command {
         set ::Aflow_filling_temperature [round_to_integer [expr {$::Aflow_filling_temperature - 1}]]
         if {$::Aflow_filling_temperature < 80} {set ::Aflow_filling_temperature 80}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 # Soaking flow pressure
@@ -710,7 +726,7 @@ dui add dbutton $page_name 580 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_soaking_pressure [round_to_one_digits [expr {$::Aflow_soaking_pressure + 0.1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 580 1250 \
     -bwidth 180 -bheight 200 -tags soak_pressure_down \
@@ -718,7 +734,7 @@ dui add dbutton $page_name 580 1250 \
     -command {
         set ::Aflow_soaking_pressure [round_to_one_digits [expr {$::Aflow_soaking_pressure - 0.1}]]
         if {$::Aflow_soaking_pressure < 0.4} {set ::Aflow_soaking_pressure 0.4}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 # Move on buttons
@@ -727,7 +743,7 @@ dui add dbutton $page_name 820 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_soaking_seconds [round_to_integer [expr {$::Aflow_soaking_seconds + 1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 820 1250 \
     -bwidth 180 -bheight 200 -tags soak_seconds_down \
@@ -735,7 +751,7 @@ dui add dbutton $page_name 820 1250 \
     -command {
         set ::Aflow_soaking_seconds [round_to_integer [expr {$::Aflow_soaking_seconds - 1}]]
         if {$::Aflow_soaking_seconds < 0} {set :::Aflow_soaking_seconds 0}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 dui add dbutton $page_name 1000 1050 \
@@ -743,7 +759,7 @@ dui add dbutton $page_name 1000 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_soaking_volume [round_to_integer [expr {$::Aflow_soaking_volume + 1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 1000 1250 \
     -bwidth 180 -bheight 200 -tags soak_volume_down \
@@ -751,7 +767,7 @@ dui add dbutton $page_name 1000 1250 \
     -command {
         set ::Aflow_soaking_volume [round_to_integer [expr {$::Aflow_soaking_volume - 1}]]
         if {$::Aflow_soaking_volume < 0} {set ::Aflow_soaking_volume 0}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 dui add dbutton $page_name 1180 1050 \
@@ -759,7 +775,7 @@ dui add dbutton $page_name 1180 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_soaking_weight [round_to_one_digits [expr {$::Aflow_soaking_weight + 0.2}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 1180 1250 \
     -bwidth 180 -bheight 200 -tags soak_weight_down \
@@ -767,7 +783,7 @@ dui add dbutton $page_name 1180 1250 \
     -command {
         set ::Aflow_soaking_weight [round_to_one_digits [expr {$::Aflow_soaking_weight - 0.2}]]
         if {$::Aflow_soaking_weight < 0} {set ::Aflow_soaking_weight 0}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 # pour buttons
@@ -776,7 +792,7 @@ dui add dbutton $page_name 1450 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_pouring_temperature [round_to_integer [expr {$::Aflow_pouring_temperature + 1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 1450 1250 \
     -bwidth 180 -bheight 200 -tags pour_temp_down \
@@ -784,7 +800,7 @@ dui add dbutton $page_name 1450 1250 \
     -command {
         set ::Aflow_pouring_temperature [round_to_integer [expr {$::Aflow_pouring_temperature - 1}]]
         if {$::Aflow_pouring_temperature < 0} {set ::Aflow_pouring_temperature 0}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 dui add dbutton $page_name 1690 1050 \
@@ -792,7 +808,7 @@ dui add dbutton $page_name 1690 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_pouring_flow [round_to_one_digits [expr {$::Aflow_pouring_flow + 0.1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 1690 1250 \
     -bwidth 180 -bheight 200 -tags pouring_flow_down \
@@ -800,7 +816,7 @@ dui add dbutton $page_name 1690 1250 \
     -command {
         set ::Aflow_pouring_flow [round_to_one_digits [expr {$::Aflow_pouring_flow - 0.1}]]
         if {$::Aflow_pouring_flow < 0.1} {set ::Aflow_pouring_flow 0.1}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 dui add dbutton $page_name 1870 1050 \
@@ -808,7 +824,7 @@ dui add dbutton $page_name 1870 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_pouring_pressure [round_to_one_digits [expr {$::Aflow_pouring_pressure + 0.1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 1870 1250 \
     -bwidth 180 -bheight 200 -tags pouring_pressure_down \
@@ -816,7 +832,7 @@ dui add dbutton $page_name 1870 1250 \
     -command {
         set ::Aflow_pouring_pressure [round_to_one_digits [expr {$::Aflow_pouring_pressure - 0.1}]]
         if {$::Aflow_pouring_pressure < 0} {set ::Aflow_pouring_pressure 0}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 # stop
@@ -825,7 +841,7 @@ dui add dbutton $page_name 2110 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds + 1}]]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 2110 1250 \
     -bwidth 180 -bheight 200 -tags SAV_down \
@@ -833,7 +849,7 @@ dui add dbutton $page_name 2110 1250 \
     -command {
         set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds - 1}]]
         if {$::Aflow_ramp_updown_seconds < 0} {set ::Aflow_ramp_updown_seconds 0}
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 dui add dbutton $page_name 2290 1050 \
@@ -843,7 +859,7 @@ dui add dbutton $page_name 2290 1050 \
         set ::settings(final_desired_shot_weight_advanced) [round_to_integer [expr {$::settings(final_desired_shot_weight_advanced) + 1}]]
         range_check_shot_variables
         profile_has_changed_set
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::demo_graph
     }
 dui add dbutton $page_name 2290 1250 \
     -bwidth 180 -bheight 200 -tags SAW_down \
@@ -852,7 +868,7 @@ dui add dbutton $page_name 2290 1250 \
         set ::settings(final_desired_shot_weight_advanced) [round_to_integer [expr {$::settings(final_desired_shot_weight_advanced) - 1}]]
         range_check_shot_variables
         profile_has_changed_set
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::demo_graph
     }
 
 ### reset changes
@@ -886,8 +902,8 @@ dui add dbutton $page_set 500 300 \
     -shape outline -width $button_outline_width -outline $button_outline_colour \
     -label "load default\rvalues" -label_font [dui font get $font 14] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::set_Aflow_default
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::set_Aflow_default
+        ::plugins::A_Flow::demo_graph
         set ::settings(profile_has_changed) 1
     }
 
@@ -905,14 +921,14 @@ dui add dbutton $page_set 100 570 \
     -label "save as" -label_font [dui font get $font 16] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         say [translate {save}] $::settings(sound_button_in)
-        ::plugins::A_Flow_Espresso_Profile::save_A-Flow_profile
+        ::plugins::A_Flow::save_A-Flow_profile
     }
 
 dui add dtext $page_set 110 700 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text {A-Flow / }
 add_de1_widget $page_set entry 270 690  {
     set ::globals(widget_aflow_save_as) $widget
     bind $widget <Return> { say [translate {save}] $::settings(sound_button_in)
-    ::plugins::A_Flow_Espresso_Profile::save_A-Flow_profile; hide_android_keyboard}
+    ::plugins::A_Flow::save_A-Flow_profile; hide_android_keyboard}
     bind $widget <Leave> hide_android_keyboard
 } -width 18 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::AFlow_name -relief flat  -highlightthickness 1 -highlightcolor #000000
 
@@ -927,13 +943,13 @@ proc ramp_down_toggle {} {
     } else {
         set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
     }
-    ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+    ::plugins::A_Flow::update_A-Flow
 }
 
 dui add dbutton $page_name 100 830 \
     -command {
         set ::ramp_down_enabled [expr {!$::ramp_down_enabled}]
-        ::plugins::A_Flow_Espresso_Profile::ramp_down_toggle
+        ::plugins::A_Flow::ramp_down_toggle
     }
 
 # toggle pressure flow ramp up/down
@@ -943,7 +959,7 @@ dui add dtoggle $page_set 500 830 -variable ::flow_extraction_up -orient horizon
 dui add dbutton $page_name 500 830 \
     -command {
         set ::flow_extraction_up [expr {!$::flow_extraction_up}]
-        ::plugins::A_Flow_Espresso_Profile::update_A-Flow
+        ::plugins::A_Flow::update_A-Flow
     }
 
 ### Graph
@@ -955,7 +971,7 @@ dui add dtext $page_set 1470 270 -tags inpoc -justify center -anchor center -fon
 
 add_de1_widget "Aflowset" graph 1030 290 {
     set ::Aflow_demo_graph $widget
-    ::plugins::A_Flow_Espresso_Profile::demo_graph;
+    ::plugins::A_Flow::demo_graph;
 
 		$widget element create line_espresso_de1_explanation_chart_pressure -xdata espresso_de1_explanation_chart_elapsed -ydata espresso_de1_explanation_chart_pressure  -label "" -linewidth [rescale_x_skin 10] -color #47e098  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0;
 		$widget element create line_espresso_de1_explanation_chart_flow -xdata espresso_de1_explanation_chart_elapsed_flow -ydata espresso_de1_explanation_chart_flow  -label "" -linewidth [rescale_x_skin 12] -color #98c5ff  -smooth $::settings(preview_graph_smoothing_technique) -pixels 0;
@@ -967,7 +983,7 @@ add_de1_widget "Aflowset" graph 1030 290 {
     $widget axis configure y2 -color #4e85f4 -tickfont Helv_7 -min 0.0 -max 6 -subdivisions 2 -majorticks {0  1  2  3  4  5  6} -hide 1;
     $widget grid configure -color #555
 } -plotbackground #1e1e1e -width [rescale_x_skin 1250] -height [rescale_y_skin 590] -borderwidth 1 -background #1e1e1e -plotrelief flat
-::plugins::A_Flow_Espresso_Profile::select_flow_curve
+::plugins::A_Flow::select_flow_curve
 
 dui add dbutton $page_set 2300 400 \
     -bwidth 200 -bheight 200 \
@@ -976,12 +992,12 @@ dui add dbutton $page_set 2300 400 \
     -label1variable {$::settings(A_Flow_graph_style)} -label1_justify center -label1_anchor center -label1_font [dui font get $font 16] -label1_fill $font_colour -label1_pos {0.5 0.5} \
     -label2 {style} -label2_font [dui font get $font 12] -label2_justify center -label2_anchor center -label2_fill $font_colour -label2_pos {0.5 0.72} \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::toggle_graph
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::toggle_graph
+        ::plugins::A_Flow::demo_graph
     }
 
 ### Version credit
-dui add variable $page_name 40 1570 -justify left -anchor w -font [dui font get "Font Awesome 5 Pro-Regular-400" 14] -fill #bbb -textvariable {A-Flow $::plugins::A_Flow_Espresso_Profile::version - by $::plugins::A_Flow_Espresso_Profile::author}
+dui add variable $page_name 40 1570 -justify left -anchor w -font [dui font get "Font Awesome 5 Pro-Regular-400" 14] -fill #bbb -textvariable {A-Flow $::plugins::A_Flow::version - by $::plugins::A_Flow::author}
 
 #### Info Page
 ### Info button
@@ -995,7 +1011,7 @@ dui add dbutton $page_set 90 300 \
 dui add dbutton $page_info 30 220 \
     -bwidth 2500 -bheight 710 \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         page_show Aflowset
     }
 
@@ -1003,66 +1019,66 @@ dui add dbutton $page_info 30 220 \
 dui add dbutton $page_info 55 1050 \
     -bwidth 230 -bheight 350 -tags dose_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_dose -state normal
-        dui item config Aflowinfo dose_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo dose_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo dose_info_button*
 
     }
 dui add dbutton $page_info 315 1050 \
     -bwidth 230 -bheight 350 -tags infuse_temp_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_infuse_temp -state normal
-        dui item config Aflowinfo infuse_temp_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo infuse_temp_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo infuse_temp_info_button*
     }
 dui add dbutton $page_info 545 1050 \
     -bwidth 230 -bheight 350 -tags infuse_pressure_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_infuse_pressure -state normal
-        dui item config Aflowinfo infuse_pressure_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo infuse_pressure_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo infuse_pressure_info_button*
     }
 dui add dbutton $page_info 795 1050 \
     -bwidth 600 -bheight 350 -tags infuse_stop_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_infuse_stop -state normal
-        dui item config Aflowinfo infuse_stop_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo infuse_stop_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo infuse_stop_info_button*
     }
 
 dui add dbutton $page_info 1425 1050 \
     -bwidth 230 -bheight 350 -tags pour_temp_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_pour_temp -state normal
-        dui item config Aflowinfo pour_temp_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo pour_temp_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo pour_temp_info_button*
     }
 dui add dbutton $page_info 1650 1050 \
     -bwidth 410 -bheight 350 -tags pour_limits_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_pour_limits -state normal
-        dui item config Aflowinfo pour_limits_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo pour_limits_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo pour_limits_info_button*
     }
 dui add dbutton $page_info 2085 1050 \
     -bwidth 600 -bheight 350 -tags pour_stop_info_button \
     -command {
-        ::plugins::A_Flow_Espresso_Profile::reset_button_canvas
+        ::plugins::A_Flow::reset_button_canvas
         dui item config Aflowinfo info_intro -state hidden
         dui item config Aflowinfo info_pour_stop -state normal
-        dui item config Aflowinfo pour_stop_bg -outline $::plugins::A_Flow_Espresso_Profile::info_colour
+        dui item config Aflowinfo pour_stop_bg -outline $::plugins::A_Flow::info_colour
         dui item hide Aflowinfo pour_stop_info_button*
     }
 
@@ -1074,7 +1090,7 @@ add_de1_variable $page_name 1010 130 -text "" -font Helv_7 -fill "#2d3046"  -jus
 add_de1_text $page_name 1650 100 -text [translate "MACHINE"] -font $settings_tab_font -fill "#7f879a" -anchor "center"
 add_de1_text $page_name 2270 100 -text [translate "APP"] -font $settings_tab_font -fill "#7f879a" -anchor "center"
 add_de1_button $page_set {after 500 update_de1_explanation_chart; say [translate {settings}] $::settings(sound_button_in); set_next_page off "settings_1"; page_show off; set ::settings(active_settings_tab) "settings_1"; set_profiles_scrollbar_dimensions} 0 0 641 188
-add_de1_button $page_name {say [translate {save}] $::settings(sound_button_in); set ::settings(original_profile_title) $::settings(profile_title); if {$::settings(profile_has_changed) == 1} { borg toast [translate "Saved"]; save_profile; ::plugins::A_Flow_Espresso_Profile::demo_graph} } 642 0 1277 188
+add_de1_button $page_name {say [translate {save}] $::settings(sound_button_in); set ::settings(original_profile_title) $::settings(profile_title); if {$::settings(profile_has_changed) == 1} { borg toast [translate "Saved"]; save_profile; ::plugins::A_Flow::demo_graph} } 642 0 1277 188
 add_de1_button $page_set {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_3; page_show settings_3; scheduler_feature_hide_show_refresh; set ::settings(active_settings_tab) "settings_3"} 1278 0 1904 188
 add_de1_button $page_set {say [translate {settings}] $::settings(sound_button_in); set_next_page off settings_4; page_show settings_4; set ::settings(active_settings_tab) "settings_4"; set_ble_scrollbar_dimensions; set_ble_scale_scrollbar_dimensions} 1905 0 2560 188
 
@@ -1085,8 +1101,8 @@ dui add dbutton "settings_1 settings_3 settings_4" 642 0 1277 188 \
             -command {
             set title_test [string range [ifexists ::settings(profile_title)] 0 7]
             if {$title_test == "A-Flow /" } {
-                ::plugins::A_Flow_Espresso_Profile::prep
-                ::plugins::A_Flow_Espresso_Profile::demo_graph
+                ::plugins::A_Flow::prep
+                ::plugins::A_Flow::demo_graph
                 if {$::settings(skin) == "DSx"} {
                     set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
                 } 
@@ -1168,8 +1184,8 @@ dui add dbutton settings_1 1100 526 \
     -bwidth 200 -bheight 200 -tags aflow_profile_button -initial_state hidden \
     -command {
         if {$title_test == "A-Flow /" } {
-            ::plugins::A_Flow_Espresso_Profile::prep
-            ::plugins::A_Flow_Espresso_Profile::demo_graph
+            ::plugins::A_Flow::prep
+            ::plugins::A_Flow::demo_graph
             if {$::settings(skin) == "DSx"} {
                 set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
             }
@@ -1190,8 +1206,8 @@ dui add dbutton "settings_1" 1330 220 \
     -command {
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
-        ::plugins::A_Flow_Espresso_Profile::prep
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::prep
+        ::plugins::A_Flow::demo_graph
         if {$::settings(skin) == "DSx"} {
             set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
         }
@@ -1226,8 +1242,8 @@ add_de1_widget "settings_1c" graph 1330 300 {
     bind $::preview_graph_advanced [platform_button_press] {
         set title_test [string range [ifexists ::settings(profile_title)] 0 7]
         if {$title_test == "A-Flow /" } {
-            ::plugins::A_Flow_Espresso_Profile::prep
-            ::plugins::A_Flow_Espresso_Profile::demo_graph
+            ::plugins::A_Flow::prep
+            ::plugins::A_Flow::demo_graph
             if {$::settings(skin) == "DSx"} {
                 set ::settings(grinder_dose_weight) [round_to_one_digits $::DSx_settings(bean_weight)]
             }
@@ -1257,21 +1273,21 @@ add_de1_button "settings_1" {say [translate {temperature}] $::settings(sound_but
 ################ Mod external code
 # if {$::settings(skin) == "DSx"} {
 #     if {[file exists "[skin_directory]/DSx_Home_Page/DSx_2021_home.page"] == 1 && $::DSx_settings(DSx_home) == "2021home"} {
-#         dui add variable off [expr {$::DSx_data_x + 480}] [expr {$::DSx_data_y + 672}] -anchor "center" -justify "center" -font [DSx_font font 7] -fill $::DSx_settings(font_colour) -textvariable {[::plugins::A_Flow_Espresso_Profile::A-Flow_data]}
+#         dui add variable off [expr {$::DSx_data_x + 480}] [expr {$::DSx_data_y + 672}] -anchor "center" -justify "center" -font [DSx_font font 7] -fill $::DSx_settings(font_colour) -textvariable {[::plugins::A_Flow::A-Flow_data]}
 #     } elseif {$::DSx_home_page_version == {} } {
-#         #dui add variable off 400 682 -anchor "center" -justify "center" -font [DSx_font font 7] -fill $::DSx_settings(font_colour) -textvariable {[::plugins::A_Flow_Espresso_Profile::A-Flow_data]}
+#         #dui add variable off 400 682 -anchor "center" -justify "center" -font [DSx_font font 7] -fill $::DSx_settings(font_colour) -textvariable {[::plugins::A_Flow::A-Flow_data]}
 #     }
 
-#     trace add execution load_bluecup {leave} ::plugins::A_Flow_Espresso_Profile::prep
-#     trace add execution load_pinkcup {leave} ::plugins::A_Flow_Espresso_Profile::prep
-#     trace add execution load_orangecup {leave} ::plugins::A_Flow_Espresso_Profile::prep
+#     trace add execution load_bluecup {leave} ::plugins::A_Flow::prep
+#     trace add execution load_pinkcup {leave} ::plugins::A_Flow::prep
+#     trace add execution load_orangecup {leave} ::plugins::A_Flow::prep
 # }
 
 rename ::update_de1_plus_advanced_explanation_chart ::update_de1_plus_advanced_explanation_chart_non_aflow
 proc ::update_de1_plus_advanced_explanation_chart {} {
 	set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
-        ::plugins::A_Flow_Espresso_Profile::demo_graph
+        ::plugins::A_Flow::demo_graph
     } else {
         ::update_de1_plus_advanced_explanation_chart_non_aflow
     }
