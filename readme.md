@@ -3,9 +3,9 @@
 Profile plugin based on D-Flow. It's a mix of D-Flow and Adaptive (for medium roasts) profile plus some adaptions. 
 
 ## How to use it?
-1. copy `A_Flow_Espresso_Profile` folder to plugin directory of DE1
-2. update D-Flow: copy plugin.tcl to `D_Flow_Espresso_Profile` in plugin directory of DE1
-3. restart the DE1 app and enable the plugin
+Enable the plugin in the DE1 app: settings -> APP -> Extensions -> select A-Flow
+
+To get started, select one of the default profiles default-light, default-medium, default-dark depending on your beans. 
 
 ## A-Flow Profile
 
@@ -33,6 +33,14 @@ Infuse parameters are not changed compared to D-Flow. Only the fill step is diff
 The screenshot below shows flow, pressure and time parameter and points to the parts, which are defined by these parameters.
 
 ![a_flow.jpg](img%2Fa_flow.jpg)
+
+### Default Profiles
+The plugin comes with 5 default profiles, which can be used as a starting point. 
+* **default-light**: default profile with light roasts
+* **default-medium**: default profile with medium roasts
+* **default-dark**: default profile with dark roasts
+* **default-like-dflow**: results in a similar profile to D-Flow, but with an increasing or decreasing flow 
+* **default-very-dark**: profile with `Ramp down` enabled, which works best with dark roasts
 
 ### Comparison
 The profile is a mix of D-Flow and Adaptive (for medium roasts) profile plus an optional pressure decline step, similar to LRv2 and other lever profiles.
