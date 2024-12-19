@@ -70,9 +70,12 @@ Lower temperatures often work better with slower extraction rates.
 }
 
 set info_pour_limits {
-A-Flow uses a pressure ramp to slowly increase the extraction flow after infusion phase. If enabled follow by a pressure decline step to reach a defined extraction flow rate. Final extraction flow is either slowly increase or decreasing.
+A-Flow uses a pressure ramp to slowly increase the extraction flow after infusion phase. 
+If enabled followed by a pressure decline step to reach a defined extraction flow rate. 
+Final extraction flow is either slowly increase or decreasing.
 
-It's possible to skip the pressure increase and decline by setting the pouring time to 0. This lead to a similar profile as D-Flow. 
+It's possible to skip the pressure increase and decline by setting the pouring time to 0. 
+This lead to a similar profile as D-Flow. 
 
 Increasing pressure will shift taste from wine like to a more syrupy texture, it also
 shifts tastes from clear delicate flavours to more muddled flavours.
@@ -623,12 +626,12 @@ dui add canvas_item rect $page_name 317 1050 543 1400 -fill #fff -width 2 -outli
 dui add canvas_item rect $page_name 547 1050 793 1400 -fill #fff -width 2 -outline #e9e9ed -tags infuse_pressure_bg
 dui add canvas_item rect $page_name 797 1050 1395 1400 -fill #fff -width 2 -outline #e9e9ed -tags infuse_stop_bg
 dui add canvas_item rect $page_name 1427 1050 1653 1400 -fill #fff -width 2 -outline #e9e9ed -tags pour_temp_bg
-dui add canvas_item rect $page_name 1657 1050 2083 1400 -fill #fff -width 2 -outline #e9e9ed -tags pour_limits_bg
-dui add canvas_item rect $page_name 2087 1050 2493 1400 -fill #fff -width 2 -outline #e9e9ed -tags pour_stop_bg
+dui add canvas_item rect $page_name 1657 1050 2265 1400 -fill #fff -width 2 -outline #e9e9ed -tags pour_limits_bg
+dui add canvas_item rect $page_name 2271 1050 2493 1400 -fill #fff -width 2 -outline #e9e9ed -tags pour_stop_bg
 
 dui add canvas_item rect $page_name 920 1386 1260 1436 -fill #ededfa -width 0 -outline #e9e9ed
-dui add canvas_item rect $page_name 1720 1386 2020 1436 -fill #ededfa -width 0 -outline #e9e9ed
-dui add canvas_item rect $page_name 2190 1386 2390 1436 -fill #ededfa -width 0 -outline #e9e9ed
+dui add canvas_item rect $page_name 1757 1386 2165 1436 -fill #ededfa -width 0 -outline #e9e9ed
+dui add canvas_item rect $page_name 2296 1386 2473 1436 -fill #ededfa -width 0 -outline #e9e9ed
 
 ### Settings
 dui add variable $page_name 400 450 -justify center -anchor center -font [dui font get $font 16] -fill #ff574a -textvariable {$::Aflow_message}
@@ -645,8 +648,8 @@ dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font
 dui add dtext $page_info 1280 900 -justify center -anchor center -font [dui font get $font 16] -fill #d7d9e6 -text {Tap within this info window to exit}
 
 dui add dtext $page_name 1092 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {infuse until either}
-dui add dtext $page_name 1850 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {maximum limits}
-dui add dtext $page_name 2290 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {stop setting}
+dui add dtext $page_name 1964 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {pouring settings}
+dui add dtext $page_name 2384 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {stop at}
 
 dui add dtext $page_name 170 1010 -justify center -anchor center -font [dui font get $font 20] -fill #d7d9e6 -text {D O S E}
 dui add dtext $page_name 170 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
@@ -672,9 +675,9 @@ dui add dtext $page_name 1960 1080 -justify center -anchor center -font [dui fon
 dui add variable $page_name 1540 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_temperature_setting $::Aflow_pouring_temperature]}
 dui add variable $page_name 1780 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_flow_measurement $::Aflow_pouring_flow]}
 dui add variable $page_name 1970 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_pressure_measurement $::Aflow_pouring_pressure]}
-dui add dtext $page_name 2200 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
+dui add dtext $page_name 2140 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
 dui add dtext $page_name 2380 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
-dui add variable $page_name 2200 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_seconds $::Aflow_ramp_updown_seconds]}
+dui add variable $page_name 2140 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_seconds $::Aflow_ramp_updown_seconds]}
 dui add variable $page_name 2380 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
 # Bean weight
@@ -826,15 +829,14 @@ dui add dbutton $page_name 1870 1250 \
         ::plugins::A_Flow::update_A-Flow
     }
 
-# stop
-dui add dbutton $page_name 2110 1050 \
+dui add dbutton $page_name 2050 1050 \
     -bwidth 180 -bheight 200 -tags SAV_up \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds + 1}]]
         ::plugins::A_Flow::update_A-Flow
     }
-dui add dbutton $page_name 2110 1250 \
+dui add dbutton $page_name 2050 1250 \
     -bwidth 180 -bheight 200 -tags SAV_down \
     -label \uf107 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
@@ -843,6 +845,7 @@ dui add dbutton $page_name 2110 1250 \
         ::plugins::A_Flow::update_A-Flow
     }
 
+# stop at weight
 dui add dbutton $page_name 2290 1050 \
     -bwidth 180 -bheight 200 -tags SAW_up \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
