@@ -126,6 +126,7 @@ set icon_colour #7f879a
 set info_colour #ff9421
 set button_outline_colour #eee
 set button_outline_width 2
+set ::Aflow_message ""
 if {[info exists ::settings(A_Flow_graph_style)] == 0} {
     set ::settings(A_Flow_graph_style) "DSx"
 }
@@ -169,55 +170,6 @@ check_Roboto-Regular_exists
 
 
 ### Check / write profile
-proc set_Aflow_default {} {
-    set ::settings(advanced_shot) {
-        {exit_if 1 flow 8.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {} exit_flow_under 0 temperature 95 weight 0.0 name Fill pressure 3.0 pump flow sensor coffee exit_type pressure_over exit_flow_over 6 exit_pressure_over 3.00 max_flow_or_pressure 8.0 seconds 15 exit_pressure_under 0} 
-        {exit_if 0 flow 0.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {$weight} exit_flow_under 0 temperature 95 weight 3.6 name Infuse pressure 3.0 pump pressure sensor coffee exit_type pressure_over exit_flow_over 6 max_flow_or_pressure 1.0 exit_pressure_over 3.0 seconds 60.0 exit_pressure_under 0} 
-        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 95 weight 0.0 name {Pressure Up} pressure 10.0 sensor coffee pump pressure exit_type flow_over exit_flow_over 2.0 max_flow_or_pressure 0 exit_pressure_over 8.5 exit_pressure_under 0 seconds 10} 
-        {exit_if 1 flow 8 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 2.0 temperature 95 weight 0.0 name {Pressure Decline} pressure 1.0 pump pressure sensor coffee exit_type flow_under exit_flow_over 3.00 max_flow_or_pressure 0 exit_pressure_over 11 seconds 0 exit_pressure_under 1} 
-        {exit_if 0 flow 2.0 volume 100 max_flow_or_pressure_range 0.6 transition fast popup {Flow Start} exit_flow_under 0 temperature 95 weight 0.0 name {Flow Start} pressure 3.0 sensor coffee pump flow exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 0 exit_pressure_over 11 exit_pressure_under 0 seconds 0} 
-        {exit_if 0 flow 4.0 volume 100 max_flow_or_pressure_range 0.6 transition smooth popup {$weight} exit_flow_under 0 temperature 95 weight 0.0 name {Flow Extraction} pressure 3.0 pump flow sensor coffee exit_type pressure_under exit_flow_over 6 max_flow_or_pressure 10.0 exit_pressure_over 11 seconds 60 exit_pressure_under 0}}
-    set ::settings(author) Janek
-    set ::settings(espresso_hold_time) 15
-    set ::settings(preinfusion_time) 20
-    set ::settings(espresso_pressure) 6.0
-    set ::settings(espresso_decline_time) 30
-    set ::settings(pressure_end) 4.0
-    set ::settings(espresso_temperature) 92.0
-    set ::settings(espresso_temperature_0) 92.0
-    set ::settings(espresso_temperature_1) 92.0
-    set ::settings(espresso_temperature_2) 92.0
-    set ::settings(espresso_temperature_3) 92.0
-    set ::settings(settings_profile_type) settings_2c
-    set ::settings(flow_profile_preinfusion) 4
-    set ::settings(flow_profile_preinfusion_time) 5
-    set ::settings(flow_profile_hold) 2
-    set ::settings(flow_profile_hold_time) 8
-    set ::settings(flow_profile_decline) 1.2
-    set ::settings(flow_profile_decline_time) 17
-    set ::settings(flow_profile_minimum_pressure) 4
-    set ::settings(preinfusion_flow_rate) 4
-    set ::settings(profile_notes) {A-Flow: an alternative profile for D-Flow}
-    set ::settings(profile_title) {A-Flow / default-medium}
-    set ::settings(final_desired_shot_volume) 100
-    set ::settings(final_desired_shot_weight) 42.0
-    set ::settings(final_desired_shot_weight_advanced) 42.0
-    set ::settings(tank_desired_water_temperature) 0
-    set ::settings(final_desired_shot_volume_advanced) 100
-    set ::settings(profile_language) en
-    set ::settings(preinfusion_stop_pressure) 4.0
-    set ::settings(profile_hide) 0
-    set ::settings(final_desired_shot_volume_advanced_count_start) 2
-    set ::settings(beverage_type) espresso
-    set ::settings(maximum_pressure) 0
-    set ::settings(maximum_pressure_range_advanced) 0.6
-    set ::settings(maximum_flow_range_advanced) 0.6
-    set ::settings(maximum_flow) 0
-    set ::settings(maximum_pressure_range_default) 0.9
-    set ::settings(maximum_flow_range_default) 1.0
-    prep
-}
-
 proc prep { args } {
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
@@ -634,7 +586,7 @@ dui add canvas_item rect $page_name 1757 1386 2165 1436 -fill #ededfa -width 0 -
 dui add canvas_item rect $page_name 2296 1386 2473 1436 -fill #ededfa -width 0 -outline #e9e9ed
 
 ### Settings
-dui add variable $page_name 400 450 -justify center -anchor center -font [dui font get $font 16] -fill #ff574a -textvariable {$::Aflow_message}
+dui add variable $page_name 400 520 -justify center -anchor center -font [dui font get $font 16] -fill #ff574a -textvariable {$::Aflow_message}
 dui add variable $page_name 1000 170 -justify center -anchor center -font [dui font get $font 12] -fill #ff9421 -textvariable {[::plugins::A_Flow::tap_to_update]}
 
 dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -tags info_intro -text $::plugins::A_Flow::info_intro
@@ -890,16 +842,6 @@ dui add dbutton $page_set 270 300 \
             fill_extensions_listbox
         }
 
-### set defaults
-dui add dbutton $page_set 500 300 \
-    -bwidth 210 -bheight 160 \
-    -shape outline -width $button_outline_width -outline $button_outline_colour \
-    -label "load default\rvalues" -label_font [dui font get $font 14] -label_fill $icon_colour -label_pos {0.5 0.5} \
-    -command {
-        ::plugins::A_Flow::set_Aflow_default
-        ::plugins::A_Flow::demo_graph
-        set ::settings(profile_has_changed) 1
-    }
 
 ### Save as
 dui add dbutton $page_set 85 555 \
