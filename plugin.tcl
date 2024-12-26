@@ -817,30 +817,6 @@ dui add dbutton $page_name 2290 1250 \
         ::plugins::A_Flow::demo_graph
     }
 
-### reset changes
-dui add dbutton $page_set 270 300 \
-    -bwidth 210 -bheight 160 \
-    -shape outline -width $button_outline_width -outline $button_outline_colour \
-    -label "reset\rchanges" -label_font [dui font get $font 14] -label_fill $icon_colour -label_pos {0.5 0.5} \
-    -command {
-        if {[ifexists ::profiles_hide_mode] == 1} {
-            unset -nocomplain ::profiles_hide_mode
-            fill_profiles_listbox
-            }
-            array unset ::settings {\*}
-            array set ::settings [array get ::settings_backup]
-            update_de1_explanation_chart
-            fill_skin_listbox
-            profile_has_changed_set_colors
-            say [translate {Cancel}] $::settings(sound_button_in)
-            #set_next_page off off
-            #page_show off
-            fill_advanced_profile_steps_listbox
-            restore_espresso_chart
-            save_settings_to_de1
-            fill_profiles_listbox
-            fill_extensions_listbox
-        }
 
 
 ### Save as
