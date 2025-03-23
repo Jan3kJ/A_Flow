@@ -6,7 +6,7 @@ namespace eval ::plugins::${plugin_name} {
     variable author "Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow and 'adaptive for medium roasts' profile"
-    variable version 1.1
+    variable version 1.2
     variable min_de1app_version {1.45.0.47}
 
 
