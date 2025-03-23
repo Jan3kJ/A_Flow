@@ -599,36 +599,36 @@ dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font
 dui add dtext $page_info 1280 520 -justify center -anchor center -font [dui font get $font 16] -fill $info_colour -initial_state hidden -tags info_pour_stop -text $::plugins::A_Flow::info_pour_stop
 dui add dtext $page_info 1280 900 -justify center -anchor center -font [dui font get $font 16] -fill #d7d9e6 -text {Tap within this info window to exit}
 
-dui add dtext $page_name 1092 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {infuse until either}
-dui add dtext $page_name 1964 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {pouring settings}
-dui add dtext $page_name 2384 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text {stop at}
+dui add dtext $page_name 1092 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text [translate {infuse until either}]
+dui add dtext $page_name 1964 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text [translate {pouring settings}]
+dui add dtext $page_name 2384 1410 -justify center -anchor center -font [dui font get $font 13] -fill #a7a9b6 -text [translate {stop at}]
 
 dui add dtext $page_name 170 1010 -justify center -anchor center -font [dui font get $font 20] -fill #d7d9e6 -text {D O S E}
-dui add dtext $page_name 170 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
+dui add dtext $page_name 170 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {weight}]
 dui add variable $page_name 170 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_weight_measurement $::settings(grinder_dose_weight)]}
 
 dui add dtext $page_name 825 1010 -justify center -anchor center -font [dui font get $font 24] -fill #d7d9e6 -text {I N F U S E}
-dui add dtext $page_name 430 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {temperature}
+dui add dtext $page_name 430 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {temperature}]
 dui add variable $page_name 430 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_temperature_setting $::Aflow_filling_temperature]}
-dui add dtext $page_name 670 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {pressure}
+dui add dtext $page_name 670 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {pressure}]
 dui add variable $page_name 680 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_pressure_measurement $::Aflow_soaking_pressure]}
-dui add dtext $page_name 910 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
-dui add dtext $page_name 1090 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {volume}
-dui add dtext $page_name 1270 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
+dui add dtext $page_name 910 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {time}]
+dui add dtext $page_name 1090 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {volume}]
+dui add dtext $page_name 1270 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {weight}]
 dui add variable $page_name 910 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_seconds $::Aflow_soaking_seconds]}
 dui add variable $page_name 1090 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_stop_at_volume_measurement $::Aflow_soaking_volume]}
 dui add variable $page_name 1270 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_SAW $::Aflow_soaking_weight]}
 
 dui add dtext $page_name 1960 1010 -justify center -anchor center -font [dui font get $font 24] -fill #d7d9e6 -text {P O U R}
 dui add variable $page_name 2290 1010 -justify center -anchor center -font [dui font get $font 20] -fill #b7b9c6 -textvariable {[::plugins::A_Flow::extraction_ratio]}
-dui add dtext $page_name 1540 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {temperature}
-dui add dtext $page_name 1780 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {flow}
-dui add dtext $page_name 1960 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {pressure}
+dui add dtext $page_name 1540 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {temperature}]
+dui add dtext $page_name 1780 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {flow}]
+dui add dtext $page_name 1960 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {pressure}]
 dui add variable $page_name 1540 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_temperature_setting $::Aflow_pouring_temperature]}
 dui add variable $page_name 1780 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_flow_measurement $::Aflow_pouring_flow]}
 dui add variable $page_name 1970 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[return_pressure_measurement $::Aflow_pouring_pressure]}
-dui add dtext $page_name 2140 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {time}
-dui add dtext $page_name 2380 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text {weight}
+dui add dtext $page_name 2140 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {time}]
+dui add dtext $page_name 2380 1080 -justify center -anchor center -font [dui font get $font 12] -fill $font_colour -text [translate {weight}]
 dui add variable $page_name 2140 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_seconds $::Aflow_ramp_updown_seconds]}
 dui add variable $page_name 2380 1250 -justify center -anchor center -font [dui font get $font 16] -fill $font_colour -textvariable {[::plugins::A_Flow::format_weight_measurement $::settings(final_desired_shot_weight_advanced)]}
 
@@ -846,7 +846,7 @@ add_de1_widget $page_set entry 270 690  {
 
 # Add toggle widget below the existing widget
 # toggle pressure ramp down on/off
-dui add dtext $page_set 230 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text {Ramp down}
+dui add dtext $page_set 230 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text [translate {Ramp down}]
 dui add dtoggle $page_set 100 830 -variable ::ramp_down_enabled -orient horizontal
 
 proc ramp_down_toggle {} {
@@ -865,7 +865,7 @@ dui add dbutton $page_name 100 830 \
     }
 
 # toggle pressure flow ramp up/down
-dui add dtext $page_set 630 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text {Flow up}
+dui add dtext $page_set 630 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text [translate {Flow up}]
 dui add dtoggle $page_set 500 830 -variable ::flow_extraction_up -orient horizontal
 
 dui add dbutton $page_name 500 830 \
