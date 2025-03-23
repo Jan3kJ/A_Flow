@@ -31,7 +31,7 @@ final_desired_shot_volume_advanced 100
 profile_title {A-Flow / default-like-dflow}
 profile_language en
 preinfusion_stop_pressure 4.0
-profile_hide 0
+profile_hide 1
 final_desired_shot_volume_advanced_count_start 2
 beverage_type espresso
 maximum_pressure 0
