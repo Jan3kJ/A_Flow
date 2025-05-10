@@ -6,7 +6,7 @@ namespace eval ::plugins::${plugin_name} {
     variable author "Janek"
     variable contact "via Diaspora"
     variable description "A-Flow is a simple to use advanced profile based on D-Flow and 'adaptive for medium roasts' profile"
-    variable version 1.3
+    variable version 1.4
     variable min_de1app_version {1.45.0.47}
 
 
@@ -167,17 +167,37 @@ proc check_Roboto-Regular_exists {} {
 check_Roboto-Regular_exists
 
 
-
+proc set_profile_index {} {
+    if {[llength $::settings(advanced_shot)] > 6} {
+        set ::index_pre_filling 0
+        set ::index_filling 1
+        set ::index_soaking 2
+        set ::index_2nd_fill 3
+        set ::index_ramp_up 4
+        set ::index_ramp_down 5
+        set ::index_pouring_start 6
+        set ::index_pouring 7
+    } else {
+        set ::index_filling 0
+        set ::index_soaking 1
+        set ::index_ramp_up 2
+        set ::index_ramp_down 3
+        set ::index_pouring_start 4
+        set ::index_pouring 5
+    }
+}
+# init profile index
+set_profile_index
 
 ### Check / write profile
 proc prep { args } {
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
-        array set filling [lindex $::settings(advanced_shot) 0]
-        array set soaking [lindex $::settings(advanced_shot) 1]
-        array set ramp_up [lindex $::settings(advanced_shot) 2]
-        array set ramp_down [lindex $::settings(advanced_shot) 3]
-        array set pouring_start [lindex $::settings(advanced_shot) 4]
+        array set filling [lindex $::settings(advanced_shot) $::index_filling]
+        array set soaking [lindex $::settings(advanced_shot) $::index_soaking]
+        array set ramp_up [lindex $::settings(advanced_shot) $::index_ramp_up]
+        array set ramp_down [lindex $::settings(advanced_shot) $::index_ramp_down]
+        array set pouring_start [lindex $::settings(advanced_shot) $::index_pouring_start]
         set ::Aflow_filling_temperature $filling(temperature)
         set ::Aflow_filling_flow $filling(flow)
         set ::Aflow_soaking_seconds [round_to_one_digits $soaking(seconds)]        
@@ -194,7 +214,7 @@ proc prep { args } {
         } else {
             set ::ramp_down_enabled false
         }
-        array set pouring [lindex $::settings(advanced_shot) 5]
+        array set pouring [lindex $::settings(advanced_shot) $::index_pouring]
         if {$pouring(flow) > $::Aflow_pouring_flow} {
             set ::flow_extraction_up true
         } else {
@@ -204,12 +224,12 @@ proc prep { args } {
 }
 
 proc update_A-Flow {} {
-    array set filling [lindex $::settings(advanced_shot) 0]
-    array set soaking [lindex $::settings(advanced_shot) 1]
-    array set ramp_up [lindex $::settings(advanced_shot) 2]
-    array set ramp_down [lindex $::settings(advanced_shot) 3]
-    array set pouring_start [lindex $::settings(advanced_shot) 4]
-    array set pouring [lindex $::settings(advanced_shot) 5]
+    array set filling [lindex $::settings(advanced_shot) $::index_filling]
+    array set soaking [lindex $::settings(advanced_shot) $::index_soaking]
+    array set ramp_up [lindex $::settings(advanced_shot) $::index_ramp_up]
+    array set ramp_down [lindex $::settings(advanced_shot) $::index_ramp_down]
+    array set pouring_start [lindex $::settings(advanced_shot) $::index_pouring_start]
+    array set pouring [lindex $::settings(advanced_shot) $::index_pouring]
     set filling(temperature) $::Aflow_filling_temperature
     set soaking(temperature) $::Aflow_filling_temperature
     set soaking(pressure) $::Aflow_soaking_pressure
@@ -255,14 +275,70 @@ proc update_A-Flow {} {
     
     set pouring(max_flow_or_pressure) $::Aflow_pouring_pressure
 
+    if {[llength $::settings(advanced_shot)] > 6} {
+        # new profile
+        # read pre_filling and 2nd_fill from profile
+        array set pre_filling [lindex $::settings(advanced_shot) $::index_pre_filling]
+        array set 2nd_fill [lindex $::settings(advanced_shot) $::index_2nd_fill]
+        msg -INFO "A-Flow: Profile with new format"
+    } else {
+        # update old profiles -> add new steps pre_filling and 2nd_fill
+        # prefill can be removed in future, if "skip first step" bug is fixed
+        msg -INFO "A-Flow: Updating old profile format"
+        array set pre_filling { 
+            exit_if 0 
+            flow 8.0 
+            volume 100 
+            max_flow_or_pressure_range 0.6 
+            transition fast 
+            popup {} 
+            exit_flow_under 0 
+            temperature 95 
+            weight 0.0 
+            name {Pre Fill} 
+            pressure 3.0 
+            sensor coffee 
+            pump flow 
+            exit_type pressure_over 
+            exit_flow_over 6 
+            exit_pressure_over 3.00 
+            max_flow_or_pressure 8.0 
+            exit_pressure_under 0 
+            seconds 1.00
+        }
+        array set 2nd_fill {
+            exit_if 1 
+            flow 1.5 
+            volume 100 
+            max_flow_or_pressure_range 0.6 
+            transition fast 
+            popup {} 
+            exit_flow_under 0 
+            temperature 95 
+            weight 0 
+            name {2nd Fill} 
+            pressure 0 
+            pump flow 
+            sensor coffee 
+            exit_type pressure_over 
+            exit_flow_over 6 
+            exit_pressure_over 2.50 
+            max_flow_or_pressure 3.0 
+            seconds 15.00 
+            exit_pressure_under 0
+        }
+    }
     set newprofile {}
+    lappend newprofile [array get pre_filling]
     lappend newprofile [array get filling]
     lappend newprofile [array get soaking]
+    lappend newprofile [array get 2nd_fill]
     lappend newprofile [array get ramp_up]
     lappend newprofile [array get ramp_down]
     lappend newprofile [array get pouring_start]
-    lappend newprofile [array get pouring]
+    lappend newprofile [array get pouring]    
     set ::settings(advanced_shot) $newprofile
+    set_profile_index
     range_check_shot_variables
     profile_has_changed_set
     ::plugins::A_Flow::demo_graph
@@ -422,7 +498,6 @@ proc demo_graph { {context {}} } {
         espresso_de1_explanation_chart_elapsed_flow append 0
         
         # Filling and soaking
-        #array set props [lindex $::settings(advanced_shot) 0]
         set sp $::Aflow_soaking_pressure
         set sp_b [expr {$sp*0.93}]
         set sp_a [expr {$sp*0.7}]
@@ -447,8 +522,8 @@ proc demo_graph { {context {}} } {
         }
         set pp $::Aflow_pouring_pressure
         set pp_a [expr {$pp*0.5}]
-        array set ramp_up [lindex $::settings(advanced_shot) 2]
-        array set ramp_down [lindex $::settings(advanced_shot) 3]
+        array set ramp_up [lindex $::settings(advanced_shot) $::index_ramp_up]
+        array set ramp_down [lindex $::settings(advanced_shot) $::index_ramp_down]
         set ramp_up_end [round_to_integer [expr {15 + $ramp_up(seconds)}]]
         set ramp_down_end [expr {$ramp_up_end + $ramp_down(seconds)}]
 
@@ -494,7 +569,7 @@ proc demo_graph { {context {}} } {
         }
 
         # final flow pouring 
-        array set props [lindex $::settings(advanced_shot) 5]
+        array set props [lindex $::settings(advanced_shot) $::index_pouring]
         if {$::settings(final_desired_shot_volume_advanced) > 0 && $::settings(final_desired_shot_volume_advanced) < $::settings(final_desired_shot_weight_advanced)} {
             set shotendtime [expr {$::settings(final_desired_shot_volume_advanced) / $pf + 16}]
         } else {
