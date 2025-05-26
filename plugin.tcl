@@ -168,15 +168,16 @@ check_Roboto-Regular_exists
 
 
 proc set_profile_index {} {
-    if {[llength $::settings(advanced_shot)] > 6} {
+    if {[llength $::settings(advanced_shot)] > 8} {
         set ::index_pre_filling 0
         set ::index_filling 1
         set ::index_soaking 2
         set ::index_2nd_fill 3
-        set ::index_ramp_up 4
-        set ::index_ramp_down 5
-        set ::index_pouring_start 6
-        set ::index_pouring 7
+        set ::index_pause 4
+        set ::index_ramp_up 5
+        set ::index_ramp_down 6
+        set ::index_pouring_start 7
+        set ::index_pouring 8
     } else {
         set ::index_filling 0
         set ::index_soaking 1
@@ -187,12 +188,13 @@ proc set_profile_index {} {
     }
 }
 # init profile index
-set_profile_index
+#set_profile_index
 
 ### Check / write profile
 proc prep { args } {
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
+        set_profile_index
         array set filling [lindex $::settings(advanced_shot) $::index_filling]
         array set soaking [lindex $::settings(advanced_shot) $::index_soaking]
         array set ramp_up [lindex $::settings(advanced_shot) $::index_ramp_up]
@@ -209,21 +211,36 @@ proc prep { args } {
         set ::Aflow_pouring_pressure $ramp_up(pressure)
         set ::Aflow_pouring_temperature $ramp_up(temperature)
         set ::Aflow_ramp_down_pressure $ramp_down(pressure)
+        # check if ramp down is enabled
+        set ::ramp_down_enabled false
         if {$ramp_down(seconds) > 0} {
             set ::ramp_down_enabled true
-        } else {
-            set ::ramp_down_enabled false
-        }
+        } 
+        # check if flow up is enabled
         array set pouring [lindex $::settings(advanced_shot) $::index_pouring]
+        set ::flow_extraction_up false
         if {$pouring(flow) > $::Aflow_pouring_flow} {
             set ::flow_extraction_up true
-        } else {
-            set ::flow_extraction_up false
+        } 
+
+        set ::2nd_fill_step false
+        if {[llength $::settings(advanced_shot)] > 8} {
+            # check if second fill step is enabled
+            array set pause [lindex $::settings(advanced_shot) $::index_pause]
+            if {$pause(seconds) > 0} {
+                set ::2nd_fill_step true
+            }
         }
+
+        update_2nd_fill
+        update_flow_up
+        update_ramp_down
+        
     }
 }
 
 proc update_A-Flow {} {
+    set_profile_index
     array set filling [lindex $::settings(advanced_shot) $::index_filling]
     array set soaking [lindex $::settings(advanced_shot) $::index_soaking]
     array set ramp_up [lindex $::settings(advanced_shot) $::index_ramp_up]
@@ -275,16 +292,16 @@ proc update_A-Flow {} {
     
     set pouring(max_flow_or_pressure) $::Aflow_pouring_pressure
 
-    if {[llength $::settings(advanced_shot)] > 6} {
+    # check if profile has new format and add new steps pre_filling and 2nd_fill if not present
+    if {[llength $::settings(advanced_shot)] > 8} {
         # new profile
         # read pre_filling and 2nd_fill from profile
         array set pre_filling [lindex $::settings(advanced_shot) $::index_pre_filling]
         array set 2nd_fill [lindex $::settings(advanced_shot) $::index_2nd_fill]
-        msg -INFO "A-Flow: Profile with new format"
+        array set pause [lindex $::settings(advanced_shot) $::index_pause]
     } else {
         # update old profiles -> add new steps pre_filling and 2nd_fill
         # prefill can be removed in future, if "skip first step" bug is fixed
-        msg -INFO "A-Flow: Updating old profile format"
         array set pre_filling { 
             exit_if 0 
             flow 8.0 
@@ -293,7 +310,7 @@ proc update_A-Flow {} {
             transition fast 
             popup {} 
             exit_flow_under 0 
-            temperature 95 
+            temperature 95
             weight 0.0 
             name {Pre Fill} 
             pressure 3.0 
@@ -324,15 +341,52 @@ proc update_A-Flow {} {
             exit_flow_over 6 
             exit_pressure_over 2.50 
             max_flow_or_pressure 3.0 
-            seconds 15.00 
+            seconds 0.00 
             exit_pressure_under 0
         }
+        array set pause {
+            exit_if 1  
+            flow 6.0  
+            volume 100  
+            max_flow_or_pressure_range 0.6  
+            transition fast  
+            popup {}  
+            exit_flow_under 1.00  
+            temperature 95  
+            weight 0  
+            name {Pause}
+            pressure 1.0  
+            pump pressure 
+            sensor coffee  
+            exit_type flow_under  
+            exit_flow_over 6  
+            exit_pressure_over 0.0  
+            max_flow_or_pressure 1.0  
+            seconds 0.00  
+            exit_pressure_under 0  
+        }
     }
+
+    # check if second fill step is enabled
+    if {$::2nd_fill_step} {
+        set pause(seconds) 15
+        set pause(temperature) $::Aflow_pouring_temperature
+        set 2nd_fill(seconds) 15
+        set 2nd_fill(temperature) $::Aflow_pouring_temperature
+    } else {
+        set pause(seconds) 0
+        set 2nd_fill(seconds) 0
+    }
+    # set temperature for pre_filling step
+    set pre_filling(temperature) $::Aflow_filling_temperature
+
+    # create new profile
     set newprofile {}
     lappend newprofile [array get pre_filling]
     lappend newprofile [array get filling]
     lappend newprofile [array get soaking]
     lappend newprofile [array get 2nd_fill]
+    lappend newprofile [array get pause]
     lappend newprofile [array get ramp_up]
     lappend newprofile [array get ramp_down]
     lappend newprofile [array get pouring_start]
@@ -481,9 +535,9 @@ proc select_flow_curve {} {
 }
 
 proc demo_graph { {context {}} } {
-	::plugins::A_Flow::prep
 	set title_test [string range [ifexists ::settings(profile_title)] 0 7]
     if {$title_test == "A-Flow /" } {
+        ::plugins::A_Flow::prep
         espresso_de1_explanation_chart_elapsed length 0
         espresso_de1_explanation_chart_temperature length 0
         espresso_de1_explanation_chart_temperature_10 length 0
@@ -754,7 +808,7 @@ dui add dbutton $page_name 580 1250 \
     -label \uf107 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::Aflow_soaking_pressure [round_to_one_digits [expr {$::Aflow_soaking_pressure - 0.1}]]
-        if {$::Aflow_soaking_pressure < 0.4} {set ::Aflow_soaking_pressure 0.4}
+        if {$::Aflow_soaking_pressure < 0} {set ::Aflow_soaking_pressure 0}
         ::plugins::A_Flow::update_A-Flow
     }
 
@@ -896,14 +950,14 @@ dui add dbutton $page_name 2290 1250 \
 
 ### Save as
 dui add dbutton $page_set 85 555 \
-    -bwidth 630 -bheight 230 \
+    -bwidth 760 -bheight 230 \
     -shape outline -width $button_outline_width -outline $button_outline_colour \
     -command {
         # do nothing to avoid warning
     }
 
 dui add dbutton $page_set 100 570 \
-    -bwidth 600 -bheight 100 \
+    -bwidth 730 -bheight 100 \
     -shape outline -width $button_outline_width -outline $button_outline_colour \
     -label "save as" -label_font [dui font get $font 16] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
@@ -919,33 +973,78 @@ add_de1_widget $page_set entry 270 690  {
     bind $widget <Leave> hide_android_keyboard
 } -width 18 -font Helv_8  -borderwidth 1 -bg #fbfaff  -foreground #4e85f4 -textvariable ::AFlow_name -relief flat  -highlightthickness 1 -highlightcolor #000000
 
-# Add toggle widget below the existing widget
-# toggle pressure ramp down on/off
-dui add dtext $page_set 230 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text [translate {Ramp down}]
-dui add dtoggle $page_set 100 830 -variable ::ramp_down_enabled -orient horizontal
+# Add toggle widgets below the existing widget
+# Initialize variables if not set
+if {![info exists ::ramp_down_enabled]} { set ::ramp_down_enabled false }
+if {![info exists ::flow_extraction_up]} { set ::flow_extraction_up false }
+if {![info exists ::2nd_fill_step]} { set ::2nd_fill_step false }
 
-proc ramp_down_toggle {} {
+# Toggle button styles
+set toggle_width 240
+set toggle_height 80
+set active_bg #4e85f4
+set active_width 4
+
+
+proc update_ramp_down {} {
     if {$::ramp_down_enabled} {
-        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds * 2}]]
+        dui item config $::plugins::A_Flow::page_set ramp_down_toggle -outline $::plugins::A_Flow::active_bg -width $::plugins::A_Flow::active_width
     } else {
-        set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
+        dui item config $::plugins::A_Flow::page_set ramp_down_toggle -width $::plugins::A_Flow::button_outline_width -outline $::plugins::A_Flow::button_outline_colour
     }
-    ::plugins::A_Flow::update_A-Flow
 }
 
-dui add dbutton $page_name 100 830 \
+proc update_flow_up {} {
+    if {$::flow_extraction_up} {
+        dui item config $::plugins::A_Flow::page_set flow_up_toggle -outline $::plugins::A_Flow::active_bg -width $::plugins::A_Flow::active_width
+    } else {
+        dui item config $::plugins::A_Flow::page_set flow_up_toggle -width $::plugins::A_Flow::button_outline_width -outline $::plugins::A_Flow::button_outline_colour
+    }
+}
+
+proc update_2nd_fill {} {
+    if {$::2nd_fill_step} {
+        dui item config $::plugins::A_Flow::page_set 2nd_fill_toggle -outline $::plugins::A_Flow::active_bg -width $::plugins::A_Flow::active_width
+    } else {
+        dui item config $::plugins::A_Flow::page_set 2nd_fill_toggle -width $::plugins::A_Flow::button_outline_width -outline $::plugins::A_Flow::button_outline_colour
+    }
+}
+
+# Ramp down toggle
+dui add dbutton $page_set 85 820 \
+    -bwidth $toggle_width -bheight $toggle_height -tags ramp_down_toggle \
+    -shape outline -width $button_outline_width -outline $button_outline_colour \
+    -label [translate {Ramp Down}] -label_font [dui font get $font 16] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::ramp_down_enabled [expr {!$::ramp_down_enabled}]
-        ::plugins::A_Flow::ramp_down_toggle
+            if {$::ramp_down_enabled} {
+            set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds * 2}]]
+        } else {
+            set ::Aflow_ramp_updown_seconds [round_to_integer [expr {$::Aflow_ramp_updown_seconds / 2}]]
+        }
+        ::plugins::A_Flow::update_ramp_down
+        ::plugins::A_Flow::update_A-Flow
     }
 
-# toggle pressure flow ramp up/down
-dui add dtext $page_set 630 835 -justify center -anchor nw -font [dui font get $font 16] -fill $font_colour -text [translate {Flow up}]
-dui add dtoggle $page_set 500 830 -variable ::flow_extraction_up -orient horizontal
-
-dui add dbutton $page_name 500 830 \
+# Flow up toggle
+dui add dbutton $page_set 345 820 \
+    -bwidth $toggle_width -bheight $toggle_height -tags flow_up_toggle \
+    -shape outline -width $button_outline_width -outline $button_outline_colour \
+    -label [translate {Flow Up}] -label_font [dui font get $font 16] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::flow_extraction_up [expr {!$::flow_extraction_up}]
+        ::plugins::A_Flow::update_flow_up
+        ::plugins::A_Flow::update_A-Flow
+    }
+
+# Second fill step toggle
+dui add dbutton $page_set 605 820 \
+    -bwidth $toggle_width -bheight $toggle_height -tags 2nd_fill_toggle \
+    -shape outline -width $button_outline_width -outline $button_outline_colour \
+    -label [translate {2nd Fill}] -label_font [dui font get $font 16] -label_fill $icon_colour -label_pos {0.5 0.5} \
+    -command {
+        set ::2nd_fill_step [expr {!$::2nd_fill_step}]
+        ::plugins::A_Flow::update_2nd_fill
         ::plugins::A_Flow::update_A-Flow
     }
 
