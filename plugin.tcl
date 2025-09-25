@@ -325,7 +325,7 @@ proc update_A-Flow {} {
         }
         array set 2nd_fill {
             exit_if 1 
-            flow 1.5 
+            flow 8.0 
             volume 100 
             max_flow_or_pressure_range 0.6 
             transition fast 
