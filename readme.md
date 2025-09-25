@@ -22,10 +22,11 @@ There is no golden rule, that fits all beans. Stop optimizing when it tastes goo
 The profile has the following steps and default values: 
 1. **Fill**: fill step with 8 ml/s flow until pressure reaches 3 bar
 2. **Infuse**: pressurized infusion or soaking step with 3 bar pressure and move on by weight
-3. **Pressure Up**: ramp pressure up to set pouring pressure and move on by flow over. The flow threshold depends on `Ramp down`. If enabled the threshold is 2 times the pouring flow. If disabled the threshold is equal to the pouring flow  
-4. **Pressure Decline**: ramp pressure down to 1 bar and move on by flow under pouring flow. Step can be disabled by `Ramp down` toggle 
-5. **Flow Start**: only active if pouring time is set to 0s, to enable a fast transition to flow extraction. 
-6. **Flow Extraction**: flow extraction with increasing (`Flow up` enabled) or decreasing flow ramp 
+3. **2nd Fill**: if enabled a second fill step is added with 8 ml/s flow until pressure reaches 2.5 bar, followed by a pause step until flow is under 1 ml/s
+4. **Pressure Up**: ramp pressure up to set pouring pressure and move on by flow over. The flow threshold depends on `Ramp down`. if enabled the threshold is 2 times the pouring flow. If disabled the threshold is equal to the pouring flow  
+5. **Pressure Decline**: ramp pressure down to 1 bar and move on by flow under pouring flow. Step can be disabled by `Ramp down` toggle 
+6. **Flow Start**: only active if pouring time is set to 0s, to enable a fast transition to flow extraction. 
+7. **Flow Extraction**: flow extraction with increasing (`Flow up` enabled) or decreasing flow ramp 
 
 ### Pouring Parameters
 Infuse parameters are not changed compared to D-Flow. Only the fill step is different with 8ml/s flow. 
@@ -40,9 +41,11 @@ Infuse parameters are not changed compared to D-Flow. Only the fill step is diff
   * `Ramp down` disabled: duration of pressure up step
 * **Weight**: final stop by weight threshold
 
-The screenshot below shows flow, pressure and time parameter and points to the parts, which are defined by these parameters.
+The screenshots below show flow, pressure and time parameter for `Ramp down` disabled and enabled.
 
 ![a_flow.jpg](img%2Fa_flow.jpg)
+
+![a_flow_ramp_down.jpg](img%2Fa_flow_ramp_down.jpg)
 
 ### Default Profiles
 The plugin comes with 5 default profiles, which can be used as a starting point. 
