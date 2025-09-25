@@ -766,16 +766,26 @@ dui add dbutton $page_name 100 1050 \
     -bwidth 150 -bheight 200 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
-        set ::settings(grinder_dose_weight) [expr {$::settings(grinder_dose_weight) + 0.1}]
+        set ::settings(grinder_dose_weight) [round_to_one_digits [expr {$::settings(grinder_dose_weight) + 0.1}]]
         set ::DSx_settings(bean_weight) $::settings(grinder_dose_weight)
     }
 dui add dbutton $page_name 100 1250 \
     -bwidth 150 -bheight 200 \
     -label \uf107 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
-        set ::settings(grinder_dose_weight) [expr {$::settings(grinder_dose_weight) - 0.1}]
+        set ::settings(grinder_dose_weight) [round_to_one_digits [expr {$::settings(grinder_dose_weight) - 0.1}]]
         if {$::settings(grinder_dose_weight) < 0} {set ::settings(grinder_dose_weight) 0}
         set ::DSx_settings(bean_weight) $::settings(grinder_dose_weight)
+    }
+
+dui add dbutton $page_name 100 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::settings(grinder_dose_weight) \
+        -n_decimals 1 -min 0 -max 30 -default $::settings(grinder_dose_weight) \
+        -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Dose weight"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values dose] \
+        -return_callback "aflow_callback_bean_weight callback_after_adv_profile_data_entry dose"
     }
 
 # Fill Temperature
@@ -794,6 +804,15 @@ dui add dbutton $page_name 340 1250 \
         if {$::Aflow_filling_temperature < 80} {set ::Aflow_filling_temperature 80}
         ::plugins::A_Flow::update_A-Flow
     }
+dui add dbutton $page_name 340 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_filling_temperature \
+        -n_decimals 0 -min 0 -max 105 -default $::Aflow_filling_temperature \
+        -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Infuse Temperature"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values temp] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry temp"
+    }
 
 # Soaking flow pressure
 dui add dbutton $page_name 580 1050 \
@@ -810,6 +829,15 @@ dui add dbutton $page_name 580 1250 \
         set ::Aflow_soaking_pressure [round_to_one_digits [expr {$::Aflow_soaking_pressure - 0.1}]]
         if {$::Aflow_soaking_pressure < 0} {set ::Aflow_soaking_pressure 0}
         ::plugins::A_Flow::update_A-Flow
+    }
+dui add dbutton $page_name 580 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_soaking_pressure \
+        -n_decimals 1 -min 0 -max $::de1(maxpressure) -default $::Aflow_soaking_pressure \
+        -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Infuse Pressure"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values pressure] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry pressure"
     }
 
 # Move on buttons
@@ -828,6 +856,15 @@ dui add dbutton $page_name 820 1250 \
         if {$::Aflow_soaking_seconds < 0} {set :::Aflow_soaking_seconds 0}
         ::plugins::A_Flow::update_A-Flow
     }
+dui add dbutton $page_name 820 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_soaking_seconds \
+        -n_decimals 0 -min 0 -max 1000 -default $::Aflow_soaking_seconds \
+        -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Maximum Infuse Time (seconds)"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values time] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry time"
+    }
 
 dui add dbutton $page_name 1000 1050 \
     -bwidth 180 -bheight 200 -tags soak_volume_up \
@@ -844,6 +881,15 @@ dui add dbutton $page_name 1000 1250 \
         if {$::Aflow_soaking_volume < 0} {set ::Aflow_soaking_volume 0}
         ::plugins::A_Flow::update_A-Flow
     }
+dui add dbutton $page_name 1000 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_soaking_volume \
+        -n_decimals 0 -min 0 -max 1000 -default $::Aflow_soaking_volume \
+        -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Maximum Infuse Volume"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values volume] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry volume"
+    }
 
 dui add dbutton $page_name 1180 1050 \
     -bwidth 180 -bheight 200 -tags soak_weight_up \
@@ -859,6 +905,15 @@ dui add dbutton $page_name 1180 1250 \
         set ::Aflow_soaking_weight [round_to_one_digits [expr {$::Aflow_soaking_weight - 0.2}]]
         if {$::Aflow_soaking_weight < 0} {set ::Aflow_soaking_weight 0}
         ::plugins::A_Flow::update_A-Flow
+    }
+dui add dbutton $page_name 1180 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_soaking_weight \
+        -n_decimals 1 -min 0 -max 1000 -default $::Aflow_soaking_weight \
+        -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Maximum Infuse Weight"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values weight] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry weight"
     }
 
 # pour buttons
@@ -877,6 +932,15 @@ dui add dbutton $page_name 1450 1250 \
         if {$::Aflow_pouring_temperature < 0} {set ::Aflow_pouring_temperature 0}
         ::plugins::A_Flow::update_A-Flow
     }
+dui add dbutton $page_name 1450 1210 \
+    -bwidth 1450 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_pouring_temperature \
+        -n_decimals 0 -min 0 -max 105 -default $::Aflow_pouring_temperature \
+        -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Pour Temperature"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values temp] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry temp"
+    }
 
 dui add dbutton $page_name 1690 1050 \
     -bwidth 180 -bheight 200 -tags pouring_flow_up \
@@ -892,6 +956,15 @@ dui add dbutton $page_name 1690 1250 \
         set ::Aflow_pouring_flow [round_to_one_digits [expr {$::Aflow_pouring_flow - 0.1}]]
         if {$::Aflow_pouring_flow < 0.1} {set ::Aflow_pouring_flow 0.1}
         ::plugins::A_Flow::update_A-Flow
+    }
+dui add dbutton $page_name 1690 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_pouring_flow \
+        -n_decimals 1 -min 0.1 -max $::de1(max_flowrate_v11) -default $::Aflow_pouring_flow \
+        -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Maximum Pour Flow rate"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values flow] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry flow"
     }
 
 dui add dbutton $page_name 1870 1050 \
@@ -909,6 +982,15 @@ dui add dbutton $page_name 1870 1250 \
         if {$::Aflow_pouring_pressure < 0} {set ::Aflow_pouring_pressure 0}
         ::plugins::A_Flow::update_A-Flow
     }
+dui add dbutton $page_name 1870 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_pouring_pressure \
+        -n_decimals 1 -min 0 -max $::de1(maxpressure) -default $::Aflow_pouring_pressure \
+        -smallincrement 0.1 -bigincrement 1 -use_biginc 1 -page_title [translate "Maximum Pour Pressure"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values pressure] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry pressure"
+    }
 
 dui add dbutton $page_name 2050 1050 \
     -bwidth 180 -bheight 200 -tags SAV_up \
@@ -925,6 +1007,15 @@ dui add dbutton $page_name 2050 1250 \
         if {$::Aflow_ramp_updown_seconds < 0} {set ::Aflow_ramp_updown_seconds 0}
         ::plugins::A_Flow::update_A-Flow
     }
+dui add dbutton $page_name 2050 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::Aflow_ramp_updown_seconds \
+        -n_decimals 0 -min 0 -max 1000 -default $::Aflow_ramp_updown_seconds \
+        -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Maximum Pour Volume"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values sav] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry sav"
+    }
 
 # stop at weight
 dui add dbutton $page_name 2290 1050 \
@@ -932,20 +1023,34 @@ dui add dbutton $page_name 2290 1050 \
     -label \uf106 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::settings(final_desired_shot_weight_advanced) [round_to_integer [expr {$::settings(final_desired_shot_weight_advanced) + 1}]]
-        range_check_shot_variables
-        profile_has_changed_set
-        ::plugins::A_Flow::demo_graph
+        ::plugins::A_Flow::update_A-Flow
     }
 dui add dbutton $page_name 2290 1250 \
     -bwidth 180 -bheight 200 -tags SAW_down \
     -label \uf107 -label_font [dui font get "Font Awesome 5 Pro-Regular-400" 18] -label_fill $icon_colour -label_pos {0.5 0.5} \
     -command {
         set ::settings(final_desired_shot_weight_advanced) [round_to_integer [expr {$::settings(final_desired_shot_weight_advanced) - 1}]]
-        range_check_shot_variables
-        profile_has_changed_set
-        ::plugins::A_Flow::demo_graph
+        ::plugins::A_Flow::update_A-Flow
+    }
+dui add dbutton $page_name 2290 1210 \
+    -bwidth 150 -bheight 80 \
+    -command {
+        dui page open_dialog dui_number_editor ::settings(final_desired_shot_weight_advanced) \
+        -n_decimals 0 -min 0 -max 1000 -default $::settings(final_desired_shot_weight_advanced) \
+        -smallincrement 1 -bigincrement 10 -use_biginc 1 -page_title [translate "Maximum Pour Weight"] \
+        -previous_values [::dui::pages::dui_number_editor::get_previous_values saw] \
+        -return_callback "aflow_callback_update callback_after_adv_profile_data_entry saw"
     }
 
+proc ::aflow_callback_update {nextproc context data} {
+    ::plugins::A_Flow::update_A-Flow
+    ::dui::pages::dui_number_editor::save_previous_value $nextproc $context $data
+}
+
+proc ::aflow_callback_bean_weight {nextproc context data} {
+    set ::DSx_settings(bean_weight) $::settings(grinder_dose_weight)
+    ::dui::pages::dui_number_editor::save_previous_value $nextproc $context $data
+}
 
 
 ### Save as
