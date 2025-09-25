@@ -5,7 +5,7 @@ namespace eval ::plugins::${plugin_name} {
     # These are shown in the plugin selection page
     variable author "Janek"
     variable contact "via Diaspora"
-    variable description "A-Flow is a simple to use advanced profile based on D-Flow and 'adaptive for medium roasts' profile"
+    variable description "A-Flow is a simple to use advanced profile based on D-Flow and 'adaptive for medium roasts' profile. For more infomation click on the info button on the settings pane."
     variable version 1.4
     variable min_de1app_version {1.45.0.47}
 
@@ -27,9 +27,9 @@ Being consistant with your grind, dose and puck prep will greatly help you repea
 }
 
 set info_infuse_temp {
-Infuse temperature allows you to emulate various machine where the group temperature may start cooler
-than the water being added.
-See pour temperature for information on how temperature effects extraction and taste.
+Infuse temperature allows you to emulate various machine where the group temperature 
+may start cooler than the water being added. See pour temperature for information 
+on how temperature effects extraction and taste.
 }
 
 set info_infuse_pressure {
@@ -49,16 +49,17 @@ where it apply water straight to extraction pressure, typically 8 or 9 bar.
 
 set info_infuse_stop {
 Infuse will move on to the pour stage when any one of these settings are reached.
-For best consistancy I recommend using weight. In cases where a scale is not available,
-you could use volume, however for those situations and where you you may want to end infuse before first drops in the cup,
-using time is likely the better option.
+For best consistancy it's recommend to use weight. However, in some cases like very dark roasts or 
+low pressure infusion, time is the better option.  
 
 A longer infusion increases body, but it also reduces puck resistance during the pour.
-Which means we would need to grind finer to maintain the same pour pressure/flow rates.
-Finer grinds also reduce body and can increase bitterness, so the aim is to find a ballence for your prefered taste.
+Which means you need to grind finer to maintain the same pour pressure/flow rates.
+Finer grinds also reduce body and can increase bitterness, so the aim is to find a balance for your prefered taste.
 
-A longer infusion also means we have a higher pecentage of the shot being at 3 bar.
-4g to 6g is a good starting range to experiment with.
+A target weight of 4g to 6g is a good starting range to experiment with.
+
+When the "2nd fill" is activated, an additional filling step is added before the pouring phase. 
+This is helpful at low infusion pressure to refill the filter before the pressure ramp starts.
 }
 
 set info_pour_temp {
@@ -71,11 +72,12 @@ Lower temperatures often work better with slower extraction rates.
 
 set info_pour_limits {
 A-Flow uses a pressure ramp to slowly increase the extraction flow after infusion phase. 
-If enabled followed by a pressure decline step to reach a defined extraction flow rate. 
-Final extraction flow is either slowly increase or decreasing.
+If "ramp down" enabled, followed by a pressure decline step to reach a defined extraction flow rate. 
+Final extraction flow is either slowly increase or decreasing, depending on "flow up".
 
-It's possible to skip the pressure increase and decline by setting the pouring time to 0. 
-This lead to a similar profile as D-Flow. 
+Time defines the duration of the pressure ramp (up and down). It's not the duration of the pouring phase.
+It's possible to skip the pressure increase and decline by setting the time to 0, 
+which lead to a similar profile as D-Flow. 
 
 Increasing pressure will shift taste from wine like to a more syrupy texture, it also
 shifts tastes from clear delicate flavours to more muddled flavours.
@@ -91,10 +93,8 @@ Increasing the extraction ratio will shift the taste from
 
 Sour  >  Sweet  >  Bitter
 
-
-
-The ideal extraction ratio can vary between beans, water alkalinity, puck prep methods and how evenly the pack is extracted.
-You should adjusted this setting for your taste.
+The ideal extraction ratio can vary between beans, water alkalinity, puck prep methods 
+and how evenly the puck is extracted. You should adjusted this setting for your taste.
 "
 
 
