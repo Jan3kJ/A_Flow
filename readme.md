@@ -1,9 +1,9 @@
 # A-Flow
 
-Profile plugin based on D-Flow. It's a mix of D-Flow and Adaptive (for medium roasts) profile plus some adaptions. 
+Profile Editor based on D-Flow. It's a mix of D-Flow and Adaptive (for medium roasts) profile plus some adaptions. 
 
 ## How to use it?
-Enable the plugin in the DE1 app: settings -> APP -> Extensions -> select A-Flow
+TBD: Select A-Flow as profile editor or select one of the A-Flow default profiles. 
 
 To get started, select one of the default profiles default-light, default-medium, default-dark depending on your beans. 
 
