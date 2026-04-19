@@ -11,7 +11,7 @@ proc show_editor { args } {
 set plugin_name "A_Flow"
 variable author "Janek"
 variable description "A-Flow is a simple to use advanced profile based on D-Flow and 'adaptive for medium roasts' profile. For more infomation click on the info button on the settings pane."
-variable version 2.0
+variable version 2.1
 
 ################# variables
 ### Info messages
@@ -147,7 +147,7 @@ if {$::settings(skin) == "DSx"} {
 ################ procedures
 proc check_profiles_exist {} {
     # check for all files in profiles folder if they exist in global profile folder and copy them if not
-    set plugins_profiles_folder [homedir]/plugins/A_Flow/profiles/
+    set plugins_profiles_folder [homedir]/profile_editors/A_Flow/profiles/
     set global_profiles_folder [homedir]/profiles/
     set default_profiles_files [glob -nocomplain $plugins_profiles_folder*.tcl]
     foreach profile_file $default_profiles_files {
@@ -157,10 +157,8 @@ proc check_profiles_exist {} {
         }
     }
 }
+check_profiles_exist
 
-proc main {} {
-    check_profiles_exist
-}
 
 proc check_Roboto-Regular_exists {} {
     if {[file exists "[homedir]/fonts/Roboto-Regular.ttf"] != 1} {
