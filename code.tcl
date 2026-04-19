@@ -1,6 +1,9 @@
 ### A-Flow profile editor by Janek, forked from Damian Brakel's D-Flow profile ###
 
 proc show_editor { args } {
+    # Load current profile values into editor variables before showing the page
+    ::A_Flow::prep
+    ::A_Flow::demo_graph
     set_next_page off Aflowset
     page_show off
 }
@@ -1352,6 +1355,7 @@ proc set_editor {args} {
 }
 
 trace add execution select_profile {leave} ::A_Flow::set_editor
+trace add execution show_profile_editor {enter} ::A_Flow::set_editor
 
 rename ::plugins::list ::plugins::list_aflow
 proc ::plugins::list {args} {
