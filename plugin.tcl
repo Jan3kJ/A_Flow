@@ -141,7 +141,7 @@ proc main {} {
 
 proc check_Roboto-Regular_exists {} {
     if {[file exists "[homedir]/fonts/Roboto-Regular.ttf"] != 1} {
-        file copy -force [homedir]/skins/DSx/DSx_Font_Files/Roboto-Regular.ttf [homedir]/fonts/Roboto-Regular.ttf
+        catch { file copy -force [homedir]/skins/DSx/DSx_Font_Files/Roboto-Regular.ttf [homedir]/fonts/Roboto-Regular.ttf }
     }
 }
 check_Roboto-Regular_exists
@@ -253,7 +253,7 @@ maximum_flow_range_advanced 0.2
 maximum_flow 0
 maximum_pressure_range_default 0.9
 maximum_flow_range_default 1.0}
-    write_file [homedir]/profiles/D-Flow____La_Pavoni.tcl $La_Pavoni_data
+    write_file [data_directory]/profiles/D-Flow____La_Pavoni.tcl $La_Pavoni_data
 }
 
 proc write_Q_profile {} {
@@ -300,7 +300,7 @@ maximum_flow_range_advanced 0.2
 maximum_flow 0
 maximum_pressure_range_default 0.9
 maximum_flow_range_default 1.0}
-    write_file [homedir]/profiles/D-Flow____Q.tcl $Q_data
+    write_file [data_directory]/profiles/D-Flow____Q.tcl $Q_data
 }
 
 if {[info exists ::settings(D_Flow_update)] == 0} {
@@ -308,9 +308,9 @@ if {[info exists ::settings(D_Flow_update)] == 0} {
 }
 
 if { $::settings(D_Flow_update) < 2 || \
-    [file exists "[homedir]/profiles/D-Flow____default.tcl"] != 1 || \
-    [file exists "[homedir]/profiles/D-Flow____Q.tcl"] != 1 || \
-    [file exists "[homedir]/profiles/D-Flow____La_Pavoni.tcl"] != 1  } {
+    [file exists "[data_directory]/profiles/D-Flow____default.tcl"] != 1 || \
+    [file exists "[data_directory]/profiles/D-Flow____Q.tcl"] != 1 || \
+    [file exists "[data_directory]/profiles/D-Flow____La_Pavoni.tcl"] != 1  } {
     set ::settings(profile_title) {D-Flow / default}
     set_Dflow_default
     set ::settings(original_profile_title) $::settings(profile_title)
@@ -322,7 +322,7 @@ if { $::settings(D_Flow_update) < 2 || \
     write_La_Pavoni_profile
 }
 
-if {[file exists "[homedir]/profiles/D-Flow____Q.tcl"] != 1 } {
+if {[file exists "[data_directory]/profiles/D-Flow____Q.tcl"] != 1 } {
     write_Q_profile
     write_La_Pavoni_profile
 }
@@ -429,7 +429,7 @@ proc save_D-Flow_profile {} {
     set df "D-Flow / "
     set profile_filename $pre$::DFlow_name
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-    if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] != 1} {
+    if {[file exists "[data_directory]/profiles/${profile_filename}.tcl"] != 1} {
         if {$title_test == "D-Flow /" } {
             set ::settings(profile_title) $df$::DFlow_name;
         } else {
@@ -1341,7 +1341,7 @@ proc save_D-Flow_to_Advanced {} {
         return
     }
     set profile_filename $::DFlow_name
-    if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] != 1} {
+    if {[file exists "[data_directory]/profiles/${profile_filename}.tcl"] != 1} {
         set ::settings(profile_title) $::DFlow_name;
         borg toast [translate "D-Flow converted to Advance"]
         save_profile
