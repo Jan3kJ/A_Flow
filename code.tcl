@@ -147,8 +147,8 @@ if {$::settings(skin) == "DSx"} {
 ################ procedures
 proc check_profiles_exist {} {
     # check for all files in profiles folder if they exist in global profile folder and copy them if not
-    set plugins_profiles_folder [homedir]/profile_editors/A_Flow/profiles/
-    set global_profiles_folder [homedir]/profiles/
+    set plugins_profiles_folder [data_directory]/profile_editors/A_Flow/profiles/
+    set global_profiles_folder [data_directory]/profiles/
     set default_profiles_files [glob -nocomplain $plugins_profiles_folder*.tcl]
     foreach profile_file $default_profiles_files {
         set profile_name [file tail $profile_file]
@@ -161,8 +161,8 @@ check_profiles_exist
 
 
 proc check_Roboto-Regular_exists {} {
-    if {[file exists "[homedir]/fonts/Roboto-Regular.ttf"] != 1} {
-        file copy -force [homedir]/skins/DSx/DSx_Font_Files/Roboto-Regular.ttf [homedir]/fonts/Roboto-Regular.ttf
+    if {[file exists "[data_directory]/fonts/Roboto-Regular.ttf"] != 1} {
+        file copy -force [data_directory]/skins/DSx/DSx_Font_Files/Roboto-Regular.ttf [data_directory]/fonts/Roboto-Regular.ttf
     }
 }
 check_Roboto-Regular_exists
@@ -472,7 +472,7 @@ proc save_A-Flow_profile {} {
     set df "A-Flow / "
     set profile_filename $pre$::AFlow_name
     set title_test [string range [ifexists ::settings(profile_title)] 0 7]
-    if {[file exists "[homedir]/profiles/${profile_filename}.tcl"] != 1} {
+    if {[file exists "[data_directory]/profiles/${profile_filename}.tcl"] != 1} {
         if {$title_test == "A-Flow /" } {
             set ::settings(profile_title) $df$::AFlow_name;
         } else {
